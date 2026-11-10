@@ -6,217 +6,263 @@
 <title>意思決定ワークベンチ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* 方針: 実務ツール。左に工程ナビ、右に入力→結果。数値は等幅、状態はピルで示す */
 :root {
-  --bg: #f4f6f8;
+  --bg: #f0f4f9;
   --surface: #ffffff;
-  --ink: #141920;
-  --ink-2: #4a5362;
-  --muted: #7b8494;
-  --line: #dce1e8;
-  --accent: #0b6e69;
-  --accent-soft: #e2f1ef;
-  --good: #1d7a45; --good-soft: #e3f3e9;
-  --warn: #9a6200; --warn-soft: #fbf0d9;
-  --bad: #b83232; --bad-soft: #fbe5e5;
-  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
-  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
-  --grid: #e8ebf0;
-  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
-  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --radius: 8px;
+  --surface-2: #f0f4f9;
+  --surface-3: #e9eef6;
+  --ink: #1f1f1f;
+  --ink-2: #444746;
+  --muted: #5e5e5e;
+  --line: #747775;
+  --line-soft: #dde3ea;
+  --accent: #0b57d0;
+  --on-accent: #ffffff;
+  --accent-soft: #d3e3fd;
+  --on-accent-soft: #041e49;
+  --good: #146c2e; --good-soft: #c4eed0;
+  --warn: #8c4a00; --warn-soft: #ffeac1;
+  --bad: #b3261e; --bad-soft: #f9dedc;
+  --series-1: #1a73e8; --series-2: #ea4335; --series-3: #34a853; --series-4: #f9ab00;
+  --series-5: #fa7b17; --series-6: #12b5cb; --series-7: #a142f4; --series-8: #e52592;
+  --grid: #e9eef6;
+  --font-display: "Google Sans", Roboto, "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Google Sans Text", Roboto, "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 16px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .3), 0 1px 3px 1px rgb(0 0 0 / .15);
+  --shadow-3: 0 4px 8px 3px rgb(0 0 0 / .15), 0 1px 3px rgb(0 0 0 / .3);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111418; --surface: #1a1e24; --ink: #eceef2; --ink-2: #b6bcc8; --muted: #868e9c; --line: #2d333c;
-    --accent: #3fb8af; --accent-soft: #163331;
-    --good: #4cc27c; --good-soft: #15301f; --warn: #e0a83a; --warn-soft: #33280f; --bad: #ef6b6b; --bad-soft: #3a1a1a;
-    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
-    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
-    --grid: #252a32; color-scheme: dark;
+    --bg: #131314; --surface: #1e1f20; --surface-2: #282a2c; --surface-3: #333537;
+    --ink: #e3e3e3; --ink-2: #c4c7c5; --muted: #a6a9a7; --line: #8e918f; --line-soft: #3c4043;
+    --accent: #a8c7fa; --on-accent: #062e6f; --accent-soft: #004a77; --on-accent-soft: #d3e3fd;
+    --good: #6dd58c; --good-soft: #0f5223; --warn: #fdd663; --warn-soft: #4a3500; --bad: #f2b8b5; --bad-soft: #8c1d18;
+    --series-1: #8ab4f8; --series-2: #f28b82; --series-3: #81c995; --series-4: #fdd663;
+    --series-5: #fcad70; --series-6: #78d9ec; --series-7: #c58af9; --series-8: #ff8bcb;
+    --grid: #2d2f31; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111418; --surface: #1a1e24; --ink: #eceef2; --ink-2: #b6bcc8; --muted: #868e9c; --line: #2d333c;
-  --accent: #3fb8af; --accent-soft: #163331;
-  --good: #4cc27c; --good-soft: #15301f; --warn: #e0a83a; --warn-soft: #33280f; --bad: #ef6b6b; --bad-soft: #3a1a1a;
-  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
-  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
-  --grid: #252a32; color-scheme: dark;
+  --bg: #131314; --surface: #1e1f20; --surface-2: #282a2c; --surface-3: #333537;
+  --ink: #e3e3e3; --ink-2: #c4c7c5; --muted: #a6a9a7; --line: #8e918f; --line-soft: #3c4043;
+  --accent: #a8c7fa; --on-accent: #062e6f; --accent-soft: #004a77; --on-accent-soft: #d3e3fd;
+  --good: #6dd58c; --good-soft: #0f5223; --warn: #fdd663; --warn-soft: #4a3500; --bad: #f2b8b5; --bad-soft: #8c1d18;
+  --series-1: #8ab4f8; --series-2: #f28b82; --series-3: #81c995; --series-4: #fdd663;
+  --series-5: #fcad70; --series-6: #78d9ec; --series-7: #c58af9; --series-8: #ff8bcb;
+  --grid: #2d2f31; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.35; }
-h1 { font-size: 17px; font-weight: 700; }
-h2 { font-size: 20px; font-weight: 700; }
-h3 { font-size: 15px; font-weight: 700; }
+h1 { font-size: 22px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 400; }
+h3 { font-size: 16px; font-weight: 500; }
 p { margin: 0; }
 .num, td.n, input.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ic { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
 
 /* ヘッダー */
-.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
-.brand { display: flex; align-items: baseline; gap: 10px; }
-.brand small { color: var(--muted); font-size: 12px; }
+.top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 8px 16px; min-height: 64px; background: var(--bg); position: sticky; top: 0; z-index: 5; }
+.brand { display: flex; align-items: center; gap: 10px; padding-right: 8px; }
+.brand .logo { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); }
+.brand .logo .ic { width: 24px; height: 24px; }
+.brand small { color: var(--muted); font-size: 12px; display: block; line-height: 1.2; }
 .proj { flex: 1 1 220px; display: flex; align-items: center; gap: 8px; min-width: 0; }
-.proj input { flex: 1; min-width: 0; max-width: 340px; border: 1px solid transparent; background: transparent; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
-.proj input:hover, .proj input:focus { border-color: var(--line); background: var(--bg); }
-.top .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.proj input { flex: 1; min-width: 0; max-width: 360px; border: 1px solid transparent; background: transparent; padding: 6px 10px; border-radius: 8px; font-size: 16px; font-family: var(--font-display); }
+.proj input:hover { border-color: var(--line-soft); }
+.proj input:focus { border-color: var(--accent); outline: none; box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface); }
+.top .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.btn { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
-.btn:hover { border-color: var(--ink-2); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-:root[data-theme="dark"] .btn.primary { color: #0b1514; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0b1514; } }
-.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
-.btn.ghost:hover { background: var(--bg); }
-.btn.small { padding: 2px 8px; font-size: 12px; }
-.btn.danger:hover { color: var(--bad); border-color: var(--bad); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border: 1px solid var(--line); background: transparent; color: var(--accent); padding: 0 20px; border-radius: 20px; cursor: pointer; white-space: nowrap; font-weight: 500; text-decoration: none; transition: background-color .15s, box-shadow .15s; }
+.btn .ic { width: 18px; height: 18px; margin-left: -4px; }
+.btn:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.btn:active { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.btn:disabled { color: color-mix(in srgb, var(--ink) 38%, transparent); border-color: color-mix(in srgb, var(--ink) 12%, transparent); background: transparent; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 92%, var(--on-accent)); box-shadow: var(--shadow-1); }
+.btn.tonal { background: var(--accent-soft); border-color: transparent; color: var(--on-accent-soft); }
+.btn.tonal:hover { box-shadow: var(--shadow-1); }
+.btn.ghost { border-color: transparent; padding: 0 12px; }
+.btn.small { height: 32px; padding: 0 14px; font-size: 13px; border-radius: 16px; }
+.btn.ghost.small { padding: 0 10px; }
+.btn.danger { color: var(--bad); }
+.btn.danger:hover { background: color-mix(in srgb, var(--bad) 8%, transparent); }
 
-/* 本体レイアウト */
-.shell { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 0; min-height: calc(100vh - 56px); }
-nav.steps { padding: 20px 12px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
-nav.steps a { display: grid; grid-template-columns: 26px 1fr; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
-nav.steps a .no { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; background: var(--surface); }
-nav.steps a:hover { background: var(--surface); color: var(--ink); }
-nav.steps a[aria-current="page"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
-nav.steps a[aria-current="page"] .no { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-nav.steps .sep { height: 1px; background: var(--line); margin: 10px 4px; }
-nav.steps .hint { font-size: 12px; color: var(--muted); padding: 4px 10px; }
-main { padding: 24px 28px 64px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-.head { display: flex; flex-direction: column; gap: 4px; max-width: 72ch; }
+/* レイアウト */
+.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: calc(100vh - 64px); }
+nav.steps { padding: 8px 12px 24px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 64px; align-self: start; }
+nav.steps a { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px; border-radius: 20px; color: var(--ink-2); text-decoration: none; font-weight: 500; }
+nav.steps a .ic { width: 22px; height: 22px; }
+nav.steps a:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+nav.steps a[aria-current="page"] { background: var(--accent-soft); color: var(--on-accent-soft); font-weight: 600; }
+nav.steps .sep { height: 1px; background: var(--line-soft); margin: 10px 16px; }
+nav.steps .hint { font-size: 12px; color: var(--muted); padding: 8px 16px; }
+main { padding: 8px 24px 64px 8px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.head { display: flex; flex-direction: column; gap: 6px; max-width: 76ch; padding: 16px 4px 4px; }
 .head p { color: var(--ink-2); }
 
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .card > header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.card > header p { color: var(--muted); font-size: 12.5px; }
+.card > header p { color: var(--muted); font-size: 13px; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .muted { color: var(--muted); }
-.small { font-size: 12.5px; }
-.note { font-size: 12.5px; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 8px 12px; }
-.err { color: var(--bad); background: var(--bad-soft); border-radius: 6px; padding: 10px 12px; }
-.warnbox { color: var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 10px 12px; }
+.small { font-size: 13px; }
+.note { font-size: 13px; color: var(--ink-2); background: var(--surface-2); border-radius: 12px; padding: 12px 16px; }
+.err { color: var(--bad); background: var(--bad-soft); border-radius: 12px; padding: 12px 16px; }
+.warnbox { color: var(--warn); background: var(--warn-soft); border-radius: 12px; padding: 12px 16px; }
+:root[data-theme="dark"] .err, :root[data-theme="dark"] .warnbox { color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .err, :root:not([data-theme="light"]) .warnbox { color: var(--ink); } }
+
+/* フォーム */
+select, .field { height: 36px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); padding: 0 10px; }
+select:hover, .field:hover { border-color: var(--ink); }
+select:focus, .field:focus { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); outline: none; }
+input[type="range"], input[type="radio"], input[type="checkbox"] { accent-color: var(--accent); }
 
 /* 表 */
 .tw { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
-th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
-th { font-weight: 700; color: var(--ink-2); font-size: 12.5px; white-space: nowrap; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+th { font-weight: 500; color: var(--ink-2); font-size: 13px; white-space: nowrap; }
+tbody tr:hover td { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 td.n, th.n { text-align: right; }
-tr.hl td { background: var(--accent-soft); }
+tr.hl td, tbody tr.hl:hover td { background: var(--accent-soft); color: var(--on-accent-soft); }
+tr.hl td .muted { color: inherit; opacity: .75; }
 table.mx { width: auto; }
-table.mx th, table.mx td { padding: 4px 6px; border: 1px solid var(--line); text-align: center; }
+table.mx th, table.mx td { padding: 4px 6px; border: 1px solid var(--line-soft); text-align: center; }
+table.mx tr:hover td { background: inherit; }
 table.mx th.rowh { text-align: left; }
-table.mx td.diag { background: var(--bg); color: var(--muted); }
+table.mx td.diag { background: var(--surface-2); color: var(--muted); }
 table.mx input { width: 54px; text-align: center; border: 1px solid transparent; background: transparent; padding: 4px 2px; border-radius: 4px; }
-table.mx input:hover, table.mx input:focus { border-color: var(--line); background: var(--bg); }
+table.mx input:hover { border-color: var(--line); }
+table.mx input:focus { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); outline: none; background: var(--surface); }
 table.mx td.v1 { background: color-mix(in srgb, var(--series-1) 10%, transparent); }
 table.mx td.v2 { background: color-mix(in srgb, var(--series-1) 20%, transparent); }
 table.mx td.v3 { background: color-mix(in srgb, var(--series-1) 32%, transparent); }
 table.mx td.v4 { background: color-mix(in srgb, var(--series-1) 46%, transparent); }
-table.edit input[type="text"], table.edit input[type="number"], table.edit select { border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 4px 8px; width: 100%; min-width: 70px; }
+table.edit input[type="text"], table.edit input[type="number"], table.edit select { height: 36px; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 0 10px; width: 100%; min-width: 70px; }
+table.edit input:hover, table.edit select:hover { border-color: var(--ink); }
+table.edit input:focus, table.edit select:focus { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); outline: none; }
 table.edit input.n { text-align: right; }
+table.edit tbody tr:hover td { background: transparent; }
 table.dm input { width: 90px; }
 table.dm th .dir { font-weight: 400; font-size: 11.5px; }
 
-/* ピル・チップ */
-.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 9px; font-size: 12px; white-space: nowrap; border: 1px solid transparent; }
+/* ピル・チップ・タブ */
+.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 8px; padding: 1px 8px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
 .pill.good { color: var(--good); background: var(--good-soft); }
 .pill.warn { color: var(--warn); background: var(--warn-soft); }
 .pill.bad { color: var(--bad); background: var(--bad-soft); }
-.pill.neutral { color: var(--ink-2); background: var(--bg); border-color: var(--line); }
+:root[data-theme="dark"] .pill.good, :root[data-theme="dark"] .pill.warn, :root[data-theme="dark"] .pill.bad { color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.good, :root:not([data-theme="light"]) .pill.warn, :root:not([data-theme="light"]) .pill.bad { color: var(--ink); } }
+.pill.neutral { color: var(--ink-2); background: var(--surface-2); }
 .pill.cost { color: var(--series-2); border-color: color-mix(in srgb, var(--series-2) 45%, transparent); }
 .pill.benefit { color: var(--series-1); border-color: color-mix(in srgb, var(--series-1) 45%, transparent); }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip { border: 1px solid var(--line); background: var(--surface); padding: 5px 12px; border-radius: 999px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
-.chip:hover { border-color: var(--ink-2); }
-.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); font-weight: 700; }
-.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-.tabs button { border: none; background: none; padding: 8px 14px; cursor: pointer; color: var(--ink-2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
-.tabs button .sub { font-size: 11.5px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { height: 32px; border: 1px solid var(--line); background: transparent; padding: 0 14px; border-radius: 8px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; color: var(--ink-2); font-weight: 500; font-size: 13px; transition: background-color .15s; }
+.chip:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.chip[aria-pressed="true"], .chip:has(input:checked) { border-color: transparent; background: var(--accent-soft); color: var(--on-accent-soft); }
+.chip[aria-pressed="true"]::before { content: ""; width: 18px; height: 18px; margin-left: -4px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.chip input[type="radio"] { margin: 0 2px 0 -4px; }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; margin: -4px -8px 0; }
+.tabs button { position: relative; border: none; background: none; height: 48px; padding: 0 16px; cursor: pointer; color: var(--ink-2); font-weight: 500; }
+.tabs button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.tabs button[aria-selected="true"] { color: var(--accent); }
+.tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
+.tabs button .sub { font-size: 11.5px; color: var(--muted); font-weight: 400; margin-left: 6px; }
 
-/* 重みバー（表内） */
+/* 表内の重みバー */
 .bar { position: relative; height: 8px; background: var(--grid); border-radius: 4px; min-width: 80px; }
 .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--series-1); }
 
 /* AHP 一対比較 */
-.pairs { display: flex; flex-direction: column; gap: 4px; }
-.pair { display: grid; grid-template-columns: minmax(70px, 1fr) minmax(200px, 2.4fr) minmax(70px, 1fr) minmax(150px, 1.2fr); align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.pairs { display: flex; flex-direction: column; gap: 2px; }
+.pair { display: grid; grid-template-columns: minmax(70px, 1fr) minmax(200px, 2.4fr) minmax(70px, 1fr) minmax(150px, 1.2fr); align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; }
+.pair:hover { background: var(--surface-2); }
 .pair .l { text-align: right; }
-.pair .win { font-weight: 700; color: var(--accent); }
-.pair input[type="range"] { width: 100%; accent-color: var(--accent); }
+.pair .win { font-weight: 600; color: var(--accent); }
+.pair input[type="range"] { width: 100%; }
 .pair .ticks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); padding: 0 4px; }
-.pair .lab { font-size: 12.5px; }
-.pair.flag { background: var(--warn-soft); border-radius: 6px; }
+.pair .lab { font-size: 13px; }
+.pair.flag, .pair.flag:hover { background: var(--warn-soft); }
 
 .chart { width: 100%; min-height: 160px; }
 .tw td, .tw th { white-space: nowrap; }
 a { color: var(--accent); }
-details summary { cursor: pointer; color: var(--ink-2); }
+details { border-top: 1px solid var(--line-soft); padding-top: 12px; }
+details summary { cursor: pointer; color: var(--accent); font-weight: 500; }
 details[open] summary { margin-bottom: 10px; }
 .kpis { display: flex; gap: 12px; flex-wrap: wrap; }
-.kpi { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; min-width: 150px; display: flex; flex-direction: column; gap: 2px; }
-.kpi b { font-family: var(--font-mono); font-size: 20px; font-weight: 500; }
+.kpi { background: var(--surface-2); border-radius: 12px; padding: 12px 16px; min-width: 160px; display: flex; flex-direction: column; gap: 2px; }
+.kpi b { font-family: var(--font-display); font-size: 24px; font-weight: 400; }
 .kpi span { font-size: 12px; color: var(--muted); }
 
 /* ガイド */
 .q { display: flex; flex-direction: column; gap: 8px; }
-.q > b { font-family: var(--font-display); }
-.reco { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.q > b { font-family: var(--font-display); font-weight: 500; }
+.reco { background: var(--accent-soft); color: var(--on-accent-soft); border-radius: var(--radius); padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
 .mcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.mcard { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
-.mcard dl { margin: 0; display: grid; grid-template-columns: 5.5em 1fr; gap: 2px 8px; font-size: 12.5px; }
+.mcard { border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); transition: box-shadow .15s; }
+.mcard:hover { box-shadow: var(--shadow-1); }
+.mcard dl { margin: 0; display: grid; grid-template-columns: 5.5em 1fr; gap: 2px 8px; font-size: 13px; }
 .mcard dt { color: var(--muted); }
 .mcard dd { margin: 0; }
 
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 6px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
-.toast.on { opacity: 1; }
-.modal { position: fixed; inset: 0; background: rgb(0 0 0 / .4); display: none; place-items: center; z-index: 30; padding: 16px; }
+/* スナックバー・ダイアログ */
+.toast { position: fixed; bottom: 24px; left: 24px; background: #303030; color: #f2f2f2; padding: 14px 16px; border-radius: 4px; font-size: 14px; box-shadow: var(--shadow-3); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; z-index: 20; max-width: min(480px, calc(100vw - 48px)); }
+.toast.on { opacity: 1; transform: none; }
+.modal { position: fixed; inset: 0; background: rgb(0 0 0 / .32); display: none; place-items: center; z-index: 30; padding: 16px; }
 .modal.on { display: grid; }
-.modal .box { background: var(--surface); border-radius: var(--radius); padding: 20px; width: min(640px, 100%); display: flex; flex-direction: column; gap: 12px; }
-.modal textarea { width: 100%; height: 220px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 8px; }
+.modal .box { background: var(--surface); border-radius: 28px; padding: 24px; width: min(560px, 100%); display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-3); }
+.modal .box h3 { font-size: 22px; font-weight: 400; }
+.modal .box .row { justify-content: flex-start; flex-direction: row-reverse; }
+.modal .box .btn:not(.primary) { border-color: transparent; }
+.modal textarea { width: 100%; height: 220px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); padding: 8px; }
 
 @media (max-width: 760px) {
   .shell { grid-template-columns: 1fr; }
-  nav.steps { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; }
-  nav.steps a { grid-template-columns: 22px auto; white-space: nowrap; }
+  nav.steps { position: static; flex-direction: row; overflow-x: auto; padding: 0 12px 8px; }
+  nav.steps a { white-space: nowrap; padding: 0 14px; }
   nav.steps .sep, nav.steps .hint { display: none; }
-  main { padding: 16px; }
+  main { padding: 0 12px 48px; }
+  .card { padding: 16px; }
   .pair { grid-template-columns: 1fr 1fr; }
   .pair .l { text-align: left; }
   .pair .slider { grid-column: 1 / -1; grid-row: 2; }
+  .toast { left: 12px; right: 12px; bottom: 12px; max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand"><h1>意思決定ワークベンチ</h1><small>多基準意思決定（MCDM）</small></div>
+  <div class="brand"><span class="logo" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8c-1.45 0-2.26 1.44-1.93 2.51l-3.55 3.56c-.3-.09-.74-.09-1.04 0l-2.55-2.55C12.27 10.45 11.46 9 10 9c-1.45 0-2.27 1.44-1.93 2.52l-4.56 4.55C2.44 15.74 1 16.55 1 18c0 1.1.9 2 2 2 1.45 0 2.26-1.44 1.93-2.51l4.55-4.56c.3.09.74.09 1.040 0l2.55 2.55C12.73 16.55 13.54 18 15 18c1.45 0 2.27-1.44 1.93-2.52l3.56-3.55c1.07.33 2.51-.48 2.51-1.93 0-1.1-.9-2-2-2z"/></svg></span><div><h1>意思決定ワークベンチ</h1><small>多基準意思決定（MCDM）</small></div></div>
   <div class="proj"><label for="projName" class="muted small">案件名</label><input id="projName" type="text" value=""></div>
   <div class="actions">
-    <button class="btn" id="btnSave" type="button">案件を保存</button>
-    <button class="btn" id="btnOpen" type="button">案件を開く</button>
+    <button class="btn tonal" id="btnSave" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>案件を保存</button>
+    <button class="btn" id="btnOpen" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>案件を開く</button>
     <input id="fileOpen" type="file" accept=".json,application/json" hidden>
-    <button class="btn ghost" id="btnNew" type="button">新規</button>
-    <button class="btn ghost" id="btnSample" type="button">サンプル</button>
+    <button class="btn ghost" id="btnNew" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>新規</button>
+    <button class="btn ghost" id="btnSample" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.8 18.4L14 10.67V6.5l1.35-1.69c.26-.33.03-.81-.39-.81H9.04c-.42 0-.65.48-.39.81L10 6.5v4.17L4.2 18.4c-.49.66-.02 1.6.8 1.6h14c.82 0 1.29-.94.8-1.6z"/></svg>サンプル</button>
   </div>
 </header>
 <div class="shell">
   <nav class="steps" aria-label="工程">
-    <a href="#setup" data-v="setup"><span class="no">1</span><span>基準と代替案</span></a>
-    <a href="#weights" data-v="weights"><span class="no">2</span><span>基準の重み付け</span></a>
-    <a href="#ranking" data-v="ranking"><span class="no">3</span><span>代替案の評価</span></a>
-    <a href="#sensitivity" data-v="sensitivity"><span class="no">4</span><span>感度分析</span></a>
+    <a href="#setup" data-v="setup"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg><span>1. 基準と代替案</span></a>
+    <a href="#weights" data-v="weights"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg><span>2. 基準の重み付け</span></a>
+    <a href="#ranking" data-v="ranking"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z"/></svg><span>3. 代替案の評価</span></a>
+    <a href="#sensitivity" data-v="sensitivity"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg><span>4. 感度分析</span></a>
     <div class="sep"></div>
-    <a href="#guide" data-v="guide"><span class="no">?</span><span>手法の選び方</span></a>
+    <a href="#guide" data-v="guide"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.170-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.790-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg><span>手法の選び方</span></a>
     <p class="hint">入力内容はこのブラウザに自動保存されます。他の人に渡すときは「案件を保存」でファイルにしてください。</p>
   </nav>
   <main id="main"></main>
@@ -233,11 +279,11 @@ details[open] summary { margin-bottom: 10px; }
 
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <script>
-/* 意思決定分析エンジン（純粋関数のみ。DOMに依存しない） */
+// 計算エンジン
 const Engine = (() => {
   const EPS = 1e-12;
 
-  // ---------- 行列ユーティリティ ----------
+  // 行列演算
   const zeros = (r, c) => Array.from({ length: r }, () => new Array(c).fill(0));
   const eye = n => zeros(n, n).map((row, i) => (row[i] = 1, row));
   const clone = M => M.map(r => r.slice());
@@ -274,7 +320,7 @@ const Engine = (() => {
     return A.map(r => r.slice(n));
   }
 
-  // ---------- 回答者の集約 ----------
+  // 回答者の集約
   function arithmeticMean(mats) {
     const n = mats[0].length, out = zeros(n, n);
     mats.forEach(M => M.forEach((r, i) => r.forEach((x, j) => out[i][j] += x / mats.length)));
@@ -286,7 +332,7 @@ const Engine = (() => {
     return out.map(r => r.map(Math.exp));
   }
 
-  // ---------- DEMATEL ----------
+  // DEMATEL
   function dematel(A) {
     const n = A.length;
     const X0 = A.map((r, i) => r.map((x, j) => (i === j ? 0 : Math.max(0, +x || 0))));
@@ -310,8 +356,7 @@ const Engine = (() => {
     return { X, T, D, R, prominence: D.map((d, i) => d + R[i]), relation: D.map((d, i) => d - R[i]), threshold, links, s };
   }
 
-  // ---------- DANP（次元＝クラスタ対応） ----------
-  // dims: 各基準が属する次元のインデックス（全て0なら単一クラスタ＝従来のDANP簡略モデル）
+  // DANP。dims は各基準の次元番号
   function danp(A, dims) {
     const n = A.length;
     const dem = dematel(A);
@@ -320,7 +365,7 @@ const Engine = (() => {
     const groups = dimIds.map(d => dims.map((x, i) => (x === d ? i : -1)).filter(i => i >= 0));
     const m = groups.length;
 
-    // T_c^α：各ブロック内で行を正規化（ブロック内の行和が0なら均等配分）
+    // Tα: ブロックごとに行正規化
     const Talpha = zeros(n, n);
     groups.forEach(gi => groups.forEach(gj => {
       gi.forEach(i => {
@@ -330,7 +375,7 @@ const Engine = (() => {
     }));
     const W = transpose(Talpha); // 無重み超行列
 
-    // T_D：ブロック平均による次元間影響行列 → 行正規化
+    // 次元間の影響行列 T_D（ブロック平均）
     const TD = zeros(m, m);
     groups.forEach((gi, a) => groups.forEach((gj, b) => {
       let s = 0; gi.forEach(i => gj.forEach(j => { s += T[i][j]; }));
@@ -338,7 +383,7 @@ const Engine = (() => {
     }));
     const TDalpha = TD.map(r => { const s = sum(r); return r.map(x => (s > EPS ? x / s : 1 / m)); });
 
-    // 重み付き超行列：W のブロック(i,j) に t_D^α(j,i) を掛ける（各列和＝1）
+    // 重み付き超行列
     const Wa = zeros(n, n);
     const dimOf = new Array(n);
     groups.forEach((g, a) => g.forEach(i => { dimOf[i] = a; }));
@@ -351,7 +396,7 @@ const Engine = (() => {
     return { ...dem, Talpha, W, TD, TDalpha, Wa, weights, converged: lim.converged, iterations: lim.iterations, groups, dimIds, dimWeights, localWeights };
   }
 
-  // 列確率行列の極限（べき乗法。周期的で振動する場合はCesàro平均で近似）
+  // 極限超行列。収束しない場合は Cesàro 平均
   function stationary(W, maxIter = 5000, tol = 1e-13) {
     const n = W.length;
     let v = new Array(n).fill(1 / n), k = 0, converged = false;
@@ -370,7 +415,7 @@ const Engine = (() => {
     return { weights: normalize(v), converged, iterations: k };
   }
 
-  // ---------- AHP ----------
+  // AHP
   const RI = [0, 0, 0, 0.58, 0.90, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49, 1.51, 1.48, 1.56, 1.57, 1.59];
   function ahp(P, method = "eig") {
     const n = P.length;
@@ -390,7 +435,7 @@ const Engine = (() => {
     const CI = n > 2 ? (lambdaMax - n) / (n - 1) : 0;
     const ri = RI[Math.min(n, RI.length - 1)];
     const CR = n > 2 && ri > 0 ? CI / ri : 0;
-    // 整合性を崩している比較：p_ij と w_i/w_j の乖離（対数）が大きい順
+    // 推定比率とのずれが大きい順
     const pairs = [];
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
       const implied = w[i] / w[j];
@@ -399,7 +444,7 @@ const Engine = (() => {
     pairs.sort((a, b) => b.dev - a.dev);
     return { weights: w, lambdaMax, CI, CR, RI: ri, pairs };
   }
-  // 上三角の比較値（正なら i が j より何倍重要、負なら j が i より何倍重要）→ 一対比較行列
+  // 尺度値（上三角）から一対比較行列を作る
   function pairwiseFromScale(n, scale) {
     const P = eye(n);
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
@@ -410,7 +455,7 @@ const Engine = (() => {
     return P;
   }
 
-  // ---------- 決定行列の正規化 ----------
+  // min-max 正規化
   function minMax(M, dirs) {
     const n = M[0].length;
     const cols = [...Array(n).keys()].map(j => M.map(r => r[j]));
@@ -421,7 +466,7 @@ const Engine = (() => {
     }));
   }
 
-  // ---------- エントロピー法 ----------
+  // エントロピー法
   function entropy(M, dirs) {
     const m = M.length, n = M[0].length;
     const R = minMax(M, dirs);
@@ -437,7 +482,7 @@ const Engine = (() => {
     return { weights: sum(d) > EPS ? normalize(d) : d.map(() => 1 / n), E, d, R };
   }
 
-  // ---------- CRITIC ----------
+  // CRITIC
   function critic(M, dirs) {
     const m = M.length, n = M[0].length;
     const R = minMax(M, dirs);
@@ -454,7 +499,7 @@ const Engine = (() => {
     return { weights: sum(C) > EPS ? normalize(C) : C.map(() => 1 / n), sd, corr, C };
   }
 
-  // ---------- 代替案評価 ----------
+  // 代替案の評価
   const ranksOf = (scores, higherIsBetter = true) => {
     const idx = scores.map((s, i) => i).sort((a, b) => higherIsBetter ? scores[b] - scores[a] : scores[a] - scores[b]);
     const rank = new Array(scores.length);
@@ -541,7 +586,7 @@ const Engine = (() => {
     return RANKERS[method](M, dirs, w);
   }
 
-  // ---------- 感度分析：1つの基準の重みを 0→1 に動かし、他は比率を保って再配分 ----------
+  // 感度分析
   function sensitivity(method, M, dirs, w, j, params = {}, steps = 20) {
     const out = [];
     for (let k = 0; k <= steps; k++) {
@@ -554,7 +599,7 @@ const Engine = (() => {
     return out;
   }
 
-  // 順位の一致度（Spearman）
+  // Spearman の順位相関
   function spearman(r1, r2) {
     const n = r1.length; if (n < 2) return 1;
     const d2 = sum(r1.map((x, i) => (x - r2[i]) ** 2));
@@ -569,9 +614,7 @@ const Engine = (() => {
 </script>
 <script>
 "use strict";
-// =====================================================================
 // 状態
-// =====================================================================
 const STORE_KEY = "mcdm-workbench-v1";
 const SAATY = { 1: "同じくらい重要", 2: "同等〜やや重要", 3: "やや重要", 4: "やや〜かなり", 5: "重要", 6: "重要〜かなり", 7: "かなり重要", 8: "かなり〜極めて", 9: "極めて重要" };
 
@@ -651,9 +694,7 @@ function validState(o) {
   return true;
 }
 
-// =====================================================================
 // ユーティリティ
-// =====================================================================
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -682,9 +723,7 @@ const RANK_METHODS = {
   promethee: { label: "PROMETHEE II", short: "PROMETHEE", scoreName: "正味フロー φ", better: "大きいほど良い" },
 };
 
-// =====================================================================
 // 計算
-// =====================================================================
 function dimIndex() {
   const names = state.criteria.map(c => (c.dim || "").trim() || "（未分類）");
   const uniq = [...new Set(names)];
@@ -750,9 +789,7 @@ function computeAll() {
   return out;
 }
 
-// =====================================================================
-// 構造の変更（基準・代替案の追加削除）
-// =====================================================================
+// 基準・代替案の追加と削除
 function addCriterion() {
   const n = state.criteria.length;
   state.criteria.push({ name: `基準${n + 1}`, unit: "", dim: state.criteria[n - 1]?.dim || "", dir: "benefit" });
@@ -779,7 +816,7 @@ function moveCriterion(j, d) {
   const sw = a => { [a[j], a[k]] = [a[k], a[j]]; };
   sw(state.criteria); state.matrix.forEach(sw); sw(state.manual);
   state.dematel.resp.forEach(r => { sw(r.A); r.A.forEach(sw); });
-  // AHP は上三角の符号付き値なので、行列に戻して入れ替えてから上三角に戻す
+  // AHP は行列に戻してから入れ替える
   state.ahp.resp.forEach(r => {
     const n = r.S.length, P = Engine.pairwiseFromScale(n, r.S);
     sw(P); P.forEach(sw);
@@ -788,9 +825,7 @@ function moveCriterion(j, d) {
   });
 }
 
-// =====================================================================
-// ルーティングと描画
-// =====================================================================
+// 描画
 function go(v) { view = ["setup", "weights", "ranking", "sensitivity", "guide"].includes(v) ? v : "setup"; render(); }
 window.addEventListener("hashchange", () => go(location.hash.slice(1)));
 
@@ -805,7 +840,7 @@ function render() {
   render._last = view;
   drawCharts();
 }
-// 入力値の変更：入力欄は残したまま、結果部分だけ描き直す
+// 結果部分だけ更新する
 function refresh() {
   saveLocal();
   computeAll();
@@ -820,9 +855,8 @@ function drawCharts() {
   if (typeof Plotly === "undefined") { q.forEach(([id]) => { const el = document.getElementById(id); if (el) el.innerHTML = `<p class="note">グラフ用ライブラリを読み込めませんでした。数値は表で確認できます。</p>`; el && (el.style.minHeight = "0"); }); return; }
   q.forEach(([id, fn]) => { const el = document.getElementById(id); if (el) { try { fn(el); } catch (e) { console.error(e); } } });
 }
-// 再描画時に chartQueue を作るため、LIVE 関数内でも chart() を呼んでよい
 
-// ---------- Plotly 共通 ----------
+// Plotly 共通設定
 const PCONF = { displayModeBar: false, responsive: true };
 function axis(extra = {}) {
   const a = { gridcolor: css("--grid"), linecolor: css("--line"), zerolinecolor: css("--line"), tickfont: { color: css("--ink-2"), size: 12 }, automargin: true, ...extra };
@@ -851,9 +885,7 @@ function weightBars(el, labels, values, opts = {}) {
     margin: { l: 10, r: 40, t: 6, b: 40 } }), PCONF);
 }
 
-// =====================================================================
-// 画面 1: 基準と代替案
-// =====================================================================
+// 画面1: 基準と代替案
 function viewSetup() {
   const crit = state.criteria.map((c, j) => `
     <tr>
@@ -864,10 +896,10 @@ function viewSetup() {
       <td><select id="c-dir-${j}" data-c="${j}" data-f="dir" aria-label="基準${j + 1}の方向">
         <option value="benefit" ${c.dir === "benefit" ? "selected" : ""}>大きいほど良い（便益）</option>
         <option value="cost" ${c.dir === "cost" ? "selected" : ""}>小さいほど良い（費用）</option></select></td>
-      <td class="row" style="flex-wrap:nowrap">
+      <td><div class="row" style="flex-wrap:nowrap;gap:2px">
         <button class="btn ghost small" data-mv="${j}" data-d="-1" type="button" aria-label="上へ" ${j === 0 ? "disabled" : ""}>↑</button>
         <button class="btn ghost small" data-mv="${j}" data-d="1" type="button" aria-label="下へ" ${j === state.criteria.length - 1 ? "disabled" : ""}>↓</button>
-        <button class="btn ghost small danger" data-delc="${j}" type="button">削除</button></td>
+        <button class="btn ghost small danger" data-delc="${j}" type="button">削除</button></div></td>
     </tr>`).join("");
   const dims = [...new Set(state.criteria.map(c => c.dim).filter(Boolean))];
   const alts = state.alternatives.map((a, i) => `
@@ -884,13 +916,13 @@ function viewSetup() {
     <header><h3>評価基準</h3><p>次元は DANP で基準をグループ化するときに使います。空欄なら全基準を1つのグループとして扱います。</p></header>
     <div class="tw"><table class="edit"><thead><tr><th>#</th><th>基準名</th><th>単位</th><th>次元（グループ）</th><th>評価の方向</th><th></th></tr></thead><tbody>${crit}</tbody></table></div>
     <datalist id="dimlist">${dims.map(d => `<option value="${esc(d)}">`).join("")}</datalist>
-    <div class="row"><button class="btn" id="addC" type="button">＋ 基準を追加</button><span class="small muted">基準数 ${state.criteria.length}（AHPは9以下を推奨）</span></div>
+    <div class="row"><button class="btn tonal" id="addC" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>基準を追加</button><span class="small muted">基準数 ${state.criteria.length}（AHPは9以下を推奨）</span></div>
   </section>
   <div class="grid2">
   <section class="card" style="max-width:520px">
     <header><h3>代替案</h3></header>
     <div class="tw"><table class="edit"><thead><tr><th>#</th><th>代替案名</th><th></th></tr></thead><tbody>${alts}</tbody></table></div>
-    <div class="row"><button class="btn" id="addA" type="button">＋ 代替案を追加</button></div>
+    <div class="row"><button class="btn tonal" id="addA" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>代替案を追加</button></div>
   </section>
   </div>
   <section class="card">
@@ -915,9 +947,7 @@ bind.setup = el => {
   $$("[data-mv]", el).forEach(b => b.onclick = () => { moveCriterion(+b.dataset.mv, +b.dataset.d); saveLocal(); render(); });
 };
 
-// =====================================================================
-// 画面 2: 重み付け
-// =====================================================================
+// 画面2: 重み付け
 const WTABS = [
   ["danp", "DEMATEL / DANP", "依存関係あり"],
   ["ahp", "AHP", "一対比較"],
@@ -957,20 +987,20 @@ LIVE.wcompare = () => {
   const w = R.weights;
   return `<div class="tw"><table>${head}${rows}</table></div>
     ${w ? `<div><p class="small muted" style="margin-bottom:4px">採用中：<b>${WEIGHT_METHODS[state.weightSource].label}</b> の重み</p>${chart("chWsel", el => weightBars(el, state.criteria.map(c => c.name), w))}</div>` : `<p class="err">${esc(R.err.weights)}</p>`}
-    <div class="row"><button class="btn small" id="csvW" type="button">重みの比較表をCSVで保存</button></div>`;
+    <div class="row"><button class="btn small" id="csvW" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>重みの比較表をCSVで保存</button></div>`;
 };
 function crPill(cr) {
   if (!isFinite(cr)) return "";
   return cr < 0.1 ? `<span class="pill good">CR ${cr.toFixed(3)}・整合</span>` : cr < 0.2 ? `<span class="pill warn">CR ${cr.toFixed(3)}・要見直し</span>` : `<span class="pill bad">CR ${cr.toFixed(3)}・不整合</span>`;
 }
 
-// ---- 回答者タブ（DEMATEL と AHP 共通） ----
+// 回答者の切替
 function respBar(kind) {
   const S = state[kind];
   return `<div class="row" style="justify-content:space-between">
     <div class="chips" role="group" aria-label="回答者">${S.resp.map((r, i) => `<button class="chip" type="button" data-resp="${kind},${i}" aria-pressed="${i === S.active}">${esc(r.name)}${kind === "ahp" && R.ahpResp ? ` ${crDot(R.ahpResp[i].CR)}` : ""}</button>`).join("")}
       <button class="chip" type="button" data-addresp="${kind}">＋ 回答者を追加</button></div>
-    <div class="row"><label class="small muted" for="respName">名前</label><input id="respName" type="text" value="${esc(S.resp[S.active].name)}" style="border:1px solid var(--line);border-radius:5px;padding:3px 8px;width:140px;background:var(--surface)">
+    <div class="row"><label class="small muted" for="respName">名前</label><input id="respName" class="field" type="text" value="${esc(S.resp[S.active].name)}" style="width:160px">
       ${S.resp.length > 1 ? `<button class="btn ghost small danger" type="button" data-delresp="${kind}">この回答者を削除</button>` : ""}</div></div>
     <p class="small muted">回答者 ${S.resp.length} 名${S.resp.length > 1 ? `の${kind === "ahp" ? "幾何平均（一対比較行列の要素ごと）" : "算術平均（直接影響行列の要素ごと）"}で計算します。` : "。複数人の回答を集約する場合は回答者を追加してください。"}</p>`;
 }
@@ -988,7 +1018,7 @@ function bindResp(el, kind) {
   const nm = $("#respName", el); if (nm) nm.addEventListener("change", () => { S.resp[S.active].name = nm.value.trim() || `回答者${S.active + 1}`; saveLocal(); render(); });
 }
 
-// ---- DEMATEL / DANP ----
+// DEMATEL / DANP
 function paneDanp() {
   const S = state.dematel, A = S.resp[S.active].A, n = R.n;
   const grid = `<table class="mx"><thead><tr><th class="rowh">影響を与える ＼ 受ける</th>${state.criteria.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>
@@ -1079,7 +1109,7 @@ bind.weights = el => {
     bindResp(el, "ahp");
     $$("[data-pair]", el).forEach(inp => inp.addEventListener("input", () => {
       const [i, j] = inp.dataset.pair.split(",").map(Number);
-      const v = -Number(inp.value); // 左（基準i）に寄せるほど i が重要
+      const v = -Number(inp.value);
       state.ahp.resp[state.ahp.active].S[i][j] = v;
       $(`#plab-${i}-${j}`).innerHTML = pairLabel(i, j, v);
       $$(`[data-side="${i},${j}"]`).forEach(s => s.classList.toggle("win", (s.dataset.who === "i" && v > 0) || (s.dataset.who === "j" && v < 0)));
@@ -1092,7 +1122,7 @@ bind.weights = el => {
   }
 };
 
-// ---- AHP ----
+// AHP
 function pairLabel(i, j, v) {
   if (v === 0) return `<span class="muted">同じくらい重要（1）</span>`;
   const k = Math.abs(v) + 1, win = v > 0 ? cname(i) : cname(j);
@@ -1146,7 +1176,7 @@ LIVE.ahpRes = () => {
 };
 function ratio(x) { return x >= 1 ? `${x.toFixed(2)} 倍` : `1/${(1 / x).toFixed(2)}`; }
 
-// ---- エントロピー / CRITIC / 直接入力 ----
+// エントロピー法 / CRITIC / 直接入力
 function paneEntropy() {
   return `<div class="note">決定行列のばらつきから重みを求めます。代替案の間で差が大きい基準ほど、判別に役立つとみなして重みが大きくなります。人の判断を使わない客観的な重みです。</div>
     <div data-live="entRes">${LIVE.entRes()}</div>`;
@@ -1179,9 +1209,7 @@ function paneManual() {
 }
 LIVE.manRes = () => R.err.manual ? `<p class="err">${esc(R.err.manual)}</p>` : `<h3>正規化後の重み</h3>${chart("chMan", el => weightBars(el, state.criteria.map(c => c.name), R.w.manual))}`;
 
-// =====================================================================
-// 画面 3: 代替案の評価
-// =====================================================================
+// 画面3: 代替案の評価
 function viewRanking() {
   return `
   <div class="head"><h2>3. 代替案の評価</h2>
@@ -1212,7 +1240,7 @@ LIVE.rankAll = () => {
   <section class="card">
     <header><h3>総合結果</h3><p>平均順位の良い順に並べています。</p></header>
     <div class="kpis">
-      <div class="kpi"><span>平均順位が最も良い代替案</span><b style="font-family:var(--font-display);font-weight:700">${esc(aname(order[0]))}</b><span>平均 ${meanRank[order[0]].toFixed(2)} 位</span></div>
+      <div class="kpi"><span>平均順位が最も良い代替案</span><b style="font-family:var(--font-display);font-weight:500">${esc(aname(order[0]))}</b><span>平均 ${meanRank[order[0]].toFixed(2)} 位</span></div>
       <div class="kpi"><span>1位の一致</span><b style="font-size:15px;font-family:var(--font-body)">${agree ? `<span class="pill good">全手法で1位</span>` : `<span class="pill warn">手法により1位が異なる</span>`}</b></div>
       <div class="kpi"><span>手法間の順位相関（Spearman 最小値）</span><b>${minS.toFixed(2)}</b>${minS >= 0.8 ? `<span class="pill good">よく一致</span>` : minS >= 0.5 ? `<span class="pill warn">おおむね一致</span>` : `<span class="pill bad">食い違いあり</span>`}</div>
       ${R.rank.vikor ? `<div class="kpi"><span>VIKOR の妥協解</span><b style="font-size:15px;font-family:var(--font-body)">${R.rank.vikor.compromise.map(i => esc(aname(i))).join("、")}</b><span>条件 C1 ${R.rank.vikor.C1 ? "○" : "×"}／C2 ${R.rank.vikor.C2 ? "○" : "×"}</span></div>` : ""}
@@ -1220,7 +1248,7 @@ LIVE.rankAll = () => {
     <div class="tw"><table><thead><tr><th>代替案</th>${keys.map(k => `<th class="n">${RANK_METHODS[k].short}</th>`).join("")}<th class="n">平均順位</th></tr></thead><tbody>
       ${order.map(i => `<tr class="${i === order[0] ? "hl" : ""}"><td>${esc(aname(i))}</td>${keys.map(k => { const r = R.rank[k].rank[i]; return `<td class="n">${r === 1 ? `<span class="pill good">1位</span>` : `${r}位`} <span class="muted small">${f3(R.rank[k].score[i])}</span></td>`; }).join("")}<td class="n"><b class="num">${meanRank[i].toFixed(2)}</b></td></tr>`).join("")}</tbody></table></div>
     <p class="small muted">各セルは「順位　スコア」。スコアの意味は手法ごとに異なります（VIKOR の Q は小さいほど良い）。</p>
-    <div class="row"><button class="btn small" id="csvR" type="button">評価結果をCSVで保存</button></div>
+    <div class="row"><button class="btn small" id="csvR" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>評価結果をCSVで保存</button></div>
   </section>
   <section class="card">
     <div class="tabs" role="tablist">${keys.map(k => `<button role="tab" type="button" aria-selected="${k === det}" data-rdet="${k}">${RANK_METHODS[k].label}</button>`).join("")}</div>
@@ -1271,9 +1299,7 @@ bind.ranking = el => {
   });
 };
 
-// =====================================================================
-// 画面 4: 感度分析
-// =====================================================================
+// 画面4: 感度分析
 function viewSensitivity() {
   return `
   <div class="head"><h2>4. 感度分析</h2>
@@ -1346,9 +1372,7 @@ bind.sensitivity = el => {
   $$("[data-smode]", el).forEach(b => b.onclick = () => { state.sens.mode = b.dataset.smode; $$("[data-smode]").forEach(x => x.setAttribute("aria-pressed", x === b)); refresh(); });
 };
 
-// =====================================================================
 // ガイド
-// =====================================================================
 const GQ = { goal: "", dep: "", src: "", rank: "" };
 function viewGuide() {
   const q = (key, title, opts) => `<div class="q"><b>${title}</b><div class="chips">${opts.map(([v, l]) => `<button class="chip" type="button" data-g="${key}" data-v="${v}" aria-pressed="${GQ[key] === v}">${l}</button>`).join("")}</div></div>`;
@@ -1406,10 +1430,8 @@ bind.guide = el => {
   });
 };
 
-// =====================================================================
 // 保存・読込・CSV
-// =====================================================================
-// 自前ホスティング版：ブラウザの通常のダウンロードで保存する
+// ダウンロードできない環境ではコピー用ダイアログを出す
 async function offerFile(filename, data, label) {
   try {
     const blob = new Blob([data], { type: filename.endsWith(".csv") ? "text/csv;charset=utf-8" : "application/json" });
@@ -1459,7 +1481,7 @@ $("#btnSample").onclick = () => confirmThen("サンプル案件を読み込み�
 $("#projName").addEventListener("change", e => { state.name = e.target.value.trim() || "無題の案件"; saveLocal(); });
 function confirmThen(msg, fn) {
   const m = $("#modal"), box = $(".box", m), prev = box.innerHTML;
-  box.innerHTML = `<h3 id="modalTitle">確認</h3><p>${esc(msg)}</p><div class="row"><button class="btn primary" id="cfYes" type="button">続ける</button><button class="btn" id="cfNo" type="button">やめる</button></div>`;
+  box.innerHTML = `<h3 id="modalTitle">確認</h3><p>${esc(msg)}</p><div class="row"><button class="btn primary" id="cfYes" type="button">続ける</button><button class="btn" id="cfNo" type="button">キャンセル</button></div>`;
   m.classList.add("on");
   const close = () => { m.classList.remove("on"); box.innerHTML = prev; rebindModal(); };
   $("#cfYes").onclick = () => { close(); fn(); };
@@ -1470,7 +1492,7 @@ function rebindModal() {
   $("#modalCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#modalText").value); toast("コピーしました"); } catch (e) { $("#modalText").select(); toast("選択した状態です。Ctrl+C（⌘C）でコピーしてください"); } };
 }
 
-// テーマ切替時にグラフの色を更新
+// テーマ変更時に再描画
 const reTheme = () => { if (document.getElementById("main").children.length) render(); };
 try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", reTheme); } catch (e) {}
 new MutationObserver(reTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
