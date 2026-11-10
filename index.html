@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>意思決定ワークベンチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* 方針: 実務ツール。左に工程ナビ、右に入力→結果。数値は等幅、状態はピルで示す */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #141920;
+  --ink-2: #4a5362;
+  --muted: #7b8494;
+  --line: #dce1e8;
+  --accent: #0b6e69;
+  --accent-soft: #e2f1ef;
+  --good: #1d7a45; --good-soft: #e3f3e9;
+  --warn: #9a6200; --warn-soft: #fbf0d9;
+  --bad: #b83232; --bad-soft: #fbe5e5;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+  --grid: #e8ebf0;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 8px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111418; --surface: #1a1e24; --ink: #eceef2; --ink-2: #b6bcc8; --muted: #868e9c; --line: #2d333c;
+    --accent: #3fb8af; --accent-soft: #163331;
+    --good: #4cc27c; --good-soft: #15301f; --warn: #e0a83a; --warn-soft: #33280f; --bad: #ef6b6b; --bad-soft: #3a1a1a;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+    --grid: #252a32; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111418; --surface: #1a1e24; --ink: #eceef2; --ink-2: #b6bcc8; --muted: #868e9c; --line: #2d333c;
+  --accent: #3fb8af; --accent-soft: #163331;
+  --good: #4cc27c; --good-soft: #15301f; --warn: #e0a83a; --warn-soft: #33280f; --bad: #ef6b6b; --bad-soft: #3a1a1a;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+  --grid: #252a32; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.35; }
+h1 { font-size: 17px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; }
+.num, td.n, input.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ヘッダー */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand small { color: var(--muted); font-size: 12px; }
+.proj { flex: 1 1 220px; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.proj input { flex: 1; min-width: 0; max-width: 340px; border: 1px solid transparent; background: transparent; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+.proj input:hover, .proj input:focus { border-color: var(--line); background: var(--bg); }
+.top .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--ink-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #0b1514; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0b1514; } }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--bg); }
+.btn.small { padding: 2px 8px; font-size: 12px; }
+.btn.danger:hover { color: var(--bad); border-color: var(--bad); }
+
+/* 本体レイアウト */
+.shell { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 0; min-height: calc(100vh - 56px); }
+nav.steps { padding: 20px 12px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+nav.steps a { display: grid; grid-template-columns: 26px 1fr; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
+nav.steps a .no { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; background: var(--surface); }
+nav.steps a:hover { background: var(--surface); color: var(--ink); }
+nav.steps a[aria-current="page"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+nav.steps a[aria-current="page"] .no { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+nav.steps .sep { height: 1px; background: var(--line); margin: 10px 4px; }
+nav.steps .hint { font-size: 12px; color: var(--muted); padding: 4px 10px; }
+main { padding: 24px 28px 64px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.head { display: flex; flex-direction: column; gap: 4px; max-width: 72ch; }
+.head p { color: var(--ink-2); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card > header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card > header p { color: var(--muted); font-size: 12.5px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.note { font-size: 12.5px; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 8px 12px; }
+.err { color: var(--bad); background: var(--bad-soft); border-radius: 6px; padding: 10px 12px; }
+.warnbox { color: var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 10px 12px; }
+
+/* 表 */
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-weight: 700; color: var(--ink-2); font-size: 12.5px; white-space: nowrap; }
+td.n, th.n { text-align: right; }
+tr.hl td { background: var(--accent-soft); }
+table.mx { width: auto; }
+table.mx th, table.mx td { padding: 4px 6px; border: 1px solid var(--line); text-align: center; }
+table.mx th.rowh { text-align: left; }
+table.mx td.diag { background: var(--bg); color: var(--muted); }
+table.mx input { width: 54px; text-align: center; border: 1px solid transparent; background: transparent; padding: 4px 2px; border-radius: 4px; }
+table.mx input:hover, table.mx input:focus { border-color: var(--line); background: var(--bg); }
+table.mx td.v1 { background: color-mix(in srgb, var(--series-1) 10%, transparent); }
+table.mx td.v2 { background: color-mix(in srgb, var(--series-1) 20%, transparent); }
+table.mx td.v3 { background: color-mix(in srgb, var(--series-1) 32%, transparent); }
+table.mx td.v4 { background: color-mix(in srgb, var(--series-1) 46%, transparent); }
+table.edit input[type="text"], table.edit input[type="number"], table.edit select { border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 4px 8px; width: 100%; min-width: 70px; }
+table.edit input.n { text-align: right; }
+table.dm input { width: 90px; }
+table.dm th .dir { font-weight: 400; font-size: 11.5px; }
+
+/* ピル・チップ */
+.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 9px; font-size: 12px; white-space: nowrap; border: 1px solid transparent; }
+.pill.good { color: var(--good); background: var(--good-soft); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); }
+.pill.bad { color: var(--bad); background: var(--bad-soft); }
+.pill.neutral { color: var(--ink-2); background: var(--bg); border-color: var(--line); }
+.pill.cost { color: var(--series-2); border-color: color-mix(in srgb, var(--series-2) 45%, transparent); }
+.pill.benefit { color: var(--series-1); border-color: color-mix(in srgb, var(--series-1) 45%, transparent); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); padding: 5px 12px; border-radius: 999px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chip:hover { border-color: var(--ink-2); }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { border: none; background: none; padding: 8px 14px; cursor: pointer; color: var(--ink-2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
+.tabs button .sub { font-size: 11.5px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* 重みバー（表内） */
+.bar { position: relative; height: 8px; background: var(--grid); border-radius: 4px; min-width: 80px; }
+.bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--series-1); }
+
+/* AHP 一対比較 */
+.pairs { display: flex; flex-direction: column; gap: 4px; }
+.pair { display: grid; grid-template-columns: minmax(70px, 1fr) minmax(200px, 2.4fr) minmax(70px, 1fr) minmax(150px, 1.2fr); align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.pair .l { text-align: right; }
+.pair .win { font-weight: 700; color: var(--accent); }
+.pair input[type="range"] { width: 100%; accent-color: var(--accent); }
+.pair .ticks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); padding: 0 4px; }
+.pair .lab { font-size: 12.5px; }
+.pair.flag { background: var(--warn-soft); border-radius: 6px; }
+
+.chart { width: 100%; min-height: 160px; }
+.tw td, .tw th { white-space: nowrap; }
+a { color: var(--accent); }
+details summary { cursor: pointer; color: var(--ink-2); }
+details[open] summary { margin-bottom: 10px; }
+.kpis { display: flex; gap: 12px; flex-wrap: wrap; }
+.kpi { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; min-width: 150px; display: flex; flex-direction: column; gap: 2px; }
+.kpi b { font-family: var(--font-mono); font-size: 20px; font-weight: 500; }
+.kpi span { font-size: 12px; color: var(--muted); }
+
+/* ガイド */
+.q { display: flex; flex-direction: column; gap: 8px; }
+.q > b { font-family: var(--font-display); }
+.reco { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.mcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.mcard { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+.mcard dl { margin: 0; display: grid; grid-template-columns: 5.5em 1fr; gap: 2px 8px; font-size: 12.5px; }
+.mcard dt { color: var(--muted); }
+.mcard dd { margin: 0; }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 6px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+.toast.on { opacity: 1; }
+.modal { position: fixed; inset: 0; background: rgb(0 0 0 / .4); display: none; place-items: center; z-index: 30; padding: 16px; }
+.modal.on { display: grid; }
+.modal .box { background: var(--surface); border-radius: var(--radius); padding: 20px; width: min(640px, 100%); display: flex; flex-direction: column; gap: 12px; }
+.modal textarea { width: 100%; height: 220px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 8px; }
+
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 1fr; }
+  nav.steps { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; }
+  nav.steps a { grid-template-columns: 22px auto; white-space: nowrap; }
+  nav.steps .sep, nav.steps .hint { display: none; }
+  main { padding: 16px; }
+  .pair { grid-template-columns: 1fr 1fr; }
+  .pair .l { text-align: left; }
+  .pair .slider { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>意思決定ワークベンチ</h1><small>多基準意思決定（MCDM）</small></div>
+  <div class="proj"><label for="projName" class="muted small">案件名</label><input id="projName" type="text" value=""></div>
+  <div class="actions">
+    <button class="btn" id="btnSave" type="button">案件を保存</button>
+    <button class="btn" id="btnOpen" type="button">案件を開く</button>
+    <input id="fileOpen" type="file" accept=".json,application/json" hidden>
+    <button class="btn ghost" id="btnNew" type="button">新規</button>
+    <button class="btn ghost" id="btnSample" type="button">サンプル</button>
+  </div>
+</header>
+<div class="shell">
+  <nav class="steps" aria-label="工程">
+    <a href="#setup" data-v="setup"><span class="no">1</span><span>基準と代替案</span></a>
+    <a href="#weights" data-v="weights"><span class="no">2</span><span>基準の重み付け</span></a>
+    <a href="#ranking" data-v="ranking"><span class="no">3</span><span>代替案の評価</span></a>
+    <a href="#sensitivity" data-v="sensitivity"><span class="no">4</span><span>感度分析</span></a>
+    <div class="sep"></div>
+    <a href="#guide" data-v="guide"><span class="no">?</span><span>手法の選び方</span></a>
+    <p class="hint">入力内容はこのブラウザに自動保存されます。他の人に渡すときは「案件を保存」でファイルにしてください。</p>
+  </nav>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="box">
+    <h3 id="modalTitle">内容をコピー</h3>
+    <p class="small muted" id="modalMsg">この画面ではファイルを直接保存できません。下の内容をコピーして、テキストファイルとして保存してください。</p>
+    <textarea id="modalText" readonly></textarea>
+    <div class="row"><button class="btn primary" id="modalCopy" type="button">コピー</button><button class="btn" id="modalClose" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+/* 意思決定分析エンジン（純粋関数のみ。DOMに依存しない） */
+const Engine = (() => {
+  const EPS = 1e-12;
+
+  // ---------- 行列ユーティリティ ----------
+  const zeros = (r, c) => Array.from({ length: r }, () => new Array(c).fill(0));
+  const eye = n => zeros(n, n).map((row, i) => (row[i] = 1, row));
+  const clone = M => M.map(r => r.slice());
+  const transpose = M => M[0].map((_, j) => M.map(r => r[j]));
+  const matmul = (A, B) => {
+    const n = A.length, m = B[0].length, k = B.length, C = zeros(n, m);
+    for (let i = 0; i < n; i++) for (let p = 0; p < k; p++) {
+      const a = A[i][p]; if (a === 0) continue;
+      for (let j = 0; j < m; j++) C[i][j] += a * B[p][j];
+    }
+    return C;
+  };
+  const matvec = (A, v) => A.map(r => r.reduce((s, x, j) => s + x * v[j], 0));
+  const rowSums = M => M.map(r => r.reduce((a, b) => a + b, 0));
+  const colSums = M => M[0].map((_, j) => M.reduce((s, r) => s + r[j], 0));
+  const sum = v => v.reduce((a, b) => a + b, 0);
+  const mean = v => sum(v) / v.length;
+  const normalize = v => { const s = sum(v); return s > 0 ? v.map(x => x / s) : v.map(() => 1 / v.length); };
+
+  function inverse(M) {
+    const n = M.length, A = M.map((r, i) => [...r, ...eye(n)[i]]);
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+      if (Math.abs(A[p][c]) < 1e-10) throw new Error("逆行列を計算できません（行列が特異です）。");
+      [A[c], A[p]] = [A[p], A[c]];
+      const d = A[c][c];
+      for (let j = 0; j < 2 * n; j++) A[c][j] /= d;
+      for (let r = 0; r < n; r++) if (r !== c) {
+        const f = A[r][c]; if (f === 0) continue;
+        for (let j = 0; j < 2 * n; j++) A[r][j] -= f * A[c][j];
+      }
+    }
+    return A.map(r => r.slice(n));
+  }
+
+  // ---------- 回答者の集約 ----------
+  function arithmeticMean(mats) {
+    const n = mats[0].length, out = zeros(n, n);
+    mats.forEach(M => M.forEach((r, i) => r.forEach((x, j) => out[i][j] += x / mats.length)));
+    return out;
+  }
+  function geometricMean(mats) {
+    const n = mats[0].length, out = zeros(n, n).map(r => r.fill(0));
+    mats.forEach(M => M.forEach((r, i) => r.forEach((x, j) => out[i][j] += Math.log(x) / mats.length)));
+    return out.map(r => r.map(Math.exp));
+  }
+
+  // ---------- DEMATEL ----------
+  function dematel(A) {
+    const n = A.length;
+    const X0 = A.map((r, i) => r.map((x, j) => (i === j ? 0 : Math.max(0, +x || 0))));
+    const s = Math.max(...rowSums(X0), ...colSums(X0));
+    if (s === 0) throw new Error("直接影響行列がすべて0です。少なくとも1つ以上の影響度を入力してください。");
+    const X = X0.map(r => r.map(x => x / s));
+    const IX = eye(n).map((r, i) => r.map((x, j) => x - X[i][j]));
+    let T;
+    try { T = matmul(X, inverse(IX)); }
+    catch (e) {
+      throw new Error("正規化行列 X から総合影響行列を計算できません。全ての行和（または列和）が等しい状態になっている可能性があります。影響度の値を少し変更してください。");
+    }
+    if (T.some(r => r.some(x => !isFinite(x) || x < -1e-9)))
+      throw new Error("総合影響行列が収束しません。全ての行和（または列和）が等しい状態になっている可能性があります。影響度の値を少し変更してください。");
+    const D = rowSums(T), R = colSums(T);
+    const all = T.flat().filter((_, k) => Math.floor(k / n) !== k % n);
+    const threshold = mean(all);
+    const links = [];
+    T.forEach((r, i) => r.forEach((t, j) => { if (i !== j && t > threshold) links.push({ from: i, to: j, value: t }); }));
+    links.sort((a, b) => b.value - a.value);
+    return { X, T, D, R, prominence: D.map((d, i) => d + R[i]), relation: D.map((d, i) => d - R[i]), threshold, links, s };
+  }
+
+  // ---------- DANP（次元＝クラスタ対応） ----------
+  // dims: 各基準が属する次元のインデックス（全て0なら単一クラスタ＝従来のDANP簡略モデル）
+  function danp(A, dims) {
+    const n = A.length;
+    const dem = dematel(A);
+    const T = dem.T;
+    const dimIds = [...new Set(dims)];
+    const groups = dimIds.map(d => dims.map((x, i) => (x === d ? i : -1)).filter(i => i >= 0));
+    const m = groups.length;
+
+    // T_c^α：各ブロック内で行を正規化（ブロック内の行和が0なら均等配分）
+    const Talpha = zeros(n, n);
+    groups.forEach(gi => groups.forEach(gj => {
+      gi.forEach(i => {
+        const s = gj.reduce((acc, j) => acc + T[i][j], 0);
+        gj.forEach(j => { Talpha[i][j] = s > EPS ? T[i][j] / s : 1 / gj.length; });
+      });
+    }));
+    const W = transpose(Talpha); // 無重み超行列
+
+    // T_D：ブロック平均による次元間影響行列 → 行正規化
+    const TD = zeros(m, m);
+    groups.forEach((gi, a) => groups.forEach((gj, b) => {
+      let s = 0; gi.forEach(i => gj.forEach(j => { s += T[i][j]; }));
+      TD[a][b] = s / (gi.length * gj.length);
+    }));
+    const TDalpha = TD.map(r => { const s = sum(r); return r.map(x => (s > EPS ? x / s : 1 / m)); });
+
+    // 重み付き超行列：W のブロック(i,j) に t_D^α(j,i) を掛ける（各列和＝1）
+    const Wa = zeros(n, n);
+    const dimOf = new Array(n);
+    groups.forEach((g, a) => g.forEach(i => { dimOf[i] = a; }));
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) Wa[r][c] = W[r][c] * TDalpha[dimOf[c]][dimOf[r]];
+
+    const lim = stationary(Wa);
+    const weights = lim.weights;
+    const dimWeights = groups.map(g => g.reduce((s, i) => s + weights[i], 0));
+    const localWeights = weights.map((w, i) => w / dimWeights[dimOf[i]]);
+    return { ...dem, Talpha, W, TD, TDalpha, Wa, weights, converged: lim.converged, iterations: lim.iterations, groups, dimIds, dimWeights, localWeights };
+  }
+
+  // 列確率行列の極限（べき乗法。周期的で振動する場合はCesàro平均で近似）
+  function stationary(W, maxIter = 5000, tol = 1e-13) {
+    const n = W.length;
+    let v = new Array(n).fill(1 / n), k = 0, converged = false;
+    for (; k < maxIter; k++) {
+      const nv = matvec(W, v);
+      const diff = Math.max(...nv.map((x, i) => Math.abs(x - v[i])));
+      v = nv;
+      if (diff < tol) { converged = true; break; }
+    }
+    if (!converged) {
+      const acc = new Array(n).fill(0);
+      let u = v.slice();
+      for (let t = 0; t < n; t++) { u.forEach((x, i) => acc[i] += x / n); u = matvec(W, u); }
+      v = acc;
+    }
+    return { weights: normalize(v), converged, iterations: k };
+  }
+
+  // ---------- AHP ----------
+  const RI = [0, 0, 0, 0.58, 0.90, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49, 1.51, 1.48, 1.56, 1.57, 1.59];
+  function ahp(P, method = "eig") {
+    const n = P.length;
+    let w;
+    if (method === "geo") {
+      w = normalize(P.map(r => Math.exp(mean(r.map(Math.log)))));
+    } else {
+      w = new Array(n).fill(1 / n);
+      for (let k = 0; k < 2000; k++) {
+        const nw = normalize(matvec(P, w));
+        const d = Math.max(...nw.map((x, i) => Math.abs(x - w[i])));
+        w = nw; if (d < 1e-14) break;
+      }
+    }
+    const Pw = matvec(P, w);
+    const lambdaMax = mean(Pw.map((x, i) => x / w[i]));
+    const CI = n > 2 ? (lambdaMax - n) / (n - 1) : 0;
+    const ri = RI[Math.min(n, RI.length - 1)];
+    const CR = n > 2 && ri > 0 ? CI / ri : 0;
+    // 整合性を崩している比較：p_ij と w_i/w_j の乖離（対数）が大きい順
+    const pairs = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const implied = w[i] / w[j];
+      pairs.push({ i, j, given: P[i][j], implied, dev: Math.abs(Math.log(P[i][j] / implied)) });
+    }
+    pairs.sort((a, b) => b.dev - a.dev);
+    return { weights: w, lambdaMax, CI, CR, RI: ri, pairs };
+  }
+  // 上三角の比較値（正なら i が j より何倍重要、負なら j が i より何倍重要）→ 一対比較行列
+  function pairwiseFromScale(n, scale) {
+    const P = eye(n);
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const v = scale[i][j] || 0;
+      const r = v >= 0 ? v + 1 : 1 / (1 - v); // 0→1, 1→2 ... 8→9, -1→1/2 ... -8→1/9
+      P[i][j] = r; P[j][i] = 1 / r;
+    }
+    return P;
+  }
+
+  // ---------- 決定行列の正規化 ----------
+  function minMax(M, dirs) {
+    const n = M[0].length;
+    const cols = [...Array(n).keys()].map(j => M.map(r => r[j]));
+    return M.map(r => r.map((x, j) => {
+      const mx = Math.max(...cols[j]), mn = Math.min(...cols[j]);
+      if (mx - mn < EPS) return 1;
+      return dirs[j] === "cost" ? (mx - x) / (mx - mn) : (x - mn) / (mx - mn);
+    }));
+  }
+
+  // ---------- エントロピー法 ----------
+  function entropy(M, dirs) {
+    const m = M.length, n = M[0].length;
+    const R = minMax(M, dirs);
+    const k = 1 / Math.log(m);
+    const E = [], d = [];
+    for (let j = 0; j < n; j++) {
+      const col = R.map(r => r[j]); const s = sum(col);
+      let e = 0;
+      if (s > EPS) col.forEach(x => { const p = x / s; if (p > 0) e -= k * p * Math.log(p); });
+      else e = 1;
+      E.push(e); d.push(1 - e);
+    }
+    return { weights: sum(d) > EPS ? normalize(d) : d.map(() => 1 / n), E, d, R };
+  }
+
+  // ---------- CRITIC ----------
+  function critic(M, dirs) {
+    const m = M.length, n = M[0].length;
+    const R = minMax(M, dirs);
+    const cols = [...Array(n).keys()].map(j => R.map(r => r[j]));
+    const mu = cols.map(mean);
+    const sd = cols.map((c, j) => Math.sqrt(sum(c.map(x => (x - mu[j]) ** 2)) / Math.max(1, m - 1)));
+    const corr = zeros(n, n);
+    for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) {
+      if (sd[a] < EPS || sd[b] < EPS) { corr[a][b] = a === b ? 1 : 0; continue; }
+      const cov = sum(cols[a].map((x, i) => (x - mu[a]) * (cols[b][i] - mu[b]))) / Math.max(1, m - 1);
+      corr[a][b] = cov / (sd[a] * sd[b]);
+    }
+    const C = sd.map((s, j) => s * sum(corr[j].map(r => 1 - r)));
+    return { weights: sum(C) > EPS ? normalize(C) : C.map(() => 1 / n), sd, corr, C };
+  }
+
+  // ---------- 代替案評価 ----------
+  const ranksOf = (scores, higherIsBetter = true) => {
+    const idx = scores.map((s, i) => i).sort((a, b) => higherIsBetter ? scores[b] - scores[a] : scores[a] - scores[b]);
+    const rank = new Array(scores.length);
+    idx.forEach((i, k) => {
+      const prev = idx[k - 1];
+      rank[i] = k > 0 && Math.abs(scores[prev] - scores[i]) < 1e-12 ? rank[prev] : k + 1;
+    });
+    return rank;
+  };
+
+  function wsm(M, dirs, w) {
+    const R = minMax(M, dirs);
+    const score = R.map(r => sum(r.map((x, j) => x * w[j])));
+    return { score, rank: ranksOf(score), R, higherIsBetter: true };
+  }
+
+  function topsis(M, dirs, w) {
+    const n = M[0].length;
+    const norm = [...Array(n).keys()].map(j => Math.sqrt(sum(M.map(r => r[j] ** 2))));
+    const V = M.map(r => r.map((x, j) => (norm[j] > EPS ? x / norm[j] : 0) * w[j]));
+    const cols = [...Array(n).keys()].map(j => V.map(r => r[j]));
+    const best = cols.map((c, j) => dirs[j] === "cost" ? Math.min(...c) : Math.max(...c));
+    const worst = cols.map((c, j) => dirs[j] === "cost" ? Math.max(...c) : Math.min(...c));
+    const dPlus = V.map(r => Math.sqrt(sum(r.map((x, j) => (x - best[j]) ** 2))));
+    const dMinus = V.map(r => Math.sqrt(sum(r.map((x, j) => (x - worst[j]) ** 2))));
+    const score = dPlus.map((dp, i) => (dp + dMinus[i] > EPS ? dMinus[i] / (dp + dMinus[i]) : 0.5));
+    return { score, rank: ranksOf(score), dPlus, dMinus, V, higherIsBetter: true };
+  }
+
+  function vikor(M, dirs, w, v = 0.5) {
+    const m = M.length, n = M[0].length;
+    const cols = [...Array(n).keys()].map(j => M.map(r => r[j]));
+    const fStar = cols.map((c, j) => dirs[j] === "cost" ? Math.min(...c) : Math.max(...c));
+    const fMinus = cols.map((c, j) => dirs[j] === "cost" ? Math.max(...c) : Math.min(...c));
+    const gap = M.map(r => r.map((x, j) => {
+      const den = fStar[j] - fMinus[j];
+      return Math.abs(den) < EPS ? 0 : w[j] * (fStar[j] - x) / den;
+    }));
+    const S = gap.map(sum), R = gap.map(r => Math.max(...r));
+    const sS = Math.min(...S), sM = Math.max(...S), rS = Math.min(...R), rM = Math.max(...R);
+    const Q = S.map((s, i) =>
+      v * (sM - sS > EPS ? (s - sS) / (sM - sS) : 0) + (1 - v) * (rM - rS > EPS ? (R[i] - rS) / (rM - rS) : 0));
+    const rank = ranksOf(Q, false);
+    const order = Q.map((_, i) => i).sort((a, b) => Q[a] - Q[b]);
+    const DQ = 1 / Math.max(1, m - 1);
+    const a1 = order[0], a2 = order[1];
+    const C1 = m < 2 ? true : Q[a2] - Q[a1] >= DQ - 1e-12;
+    const C2 = ranksOf(S, false)[a1] === 1 || ranksOf(R, false)[a1] === 1;
+    let compromise;
+    if (C1 && C2) compromise = [a1];
+    else if (C1 && !C2) compromise = [a1, a2];
+    else compromise = order.filter(i => Q[i] - Q[a1] < DQ - 1e-12);
+    return { score: Q, rank, S, R, Q, DQ, C1, C2, compromise, higherIsBetter: false, v };
+  }
+
+  function promethee(M, dirs, w, pref = "usual") {
+    const m = M.length, n = M[0].length;
+    const cols = [...Array(n).keys()].map(j => M.map(r => r[j]));
+    const range = cols.map(c => Math.max(...c) - Math.min(...c));
+    const Pi = zeros(m, m);
+    for (let a = 0; a < m; a++) for (let b = 0; b < m; b++) {
+      if (a === b) continue;
+      let s = 0;
+      for (let j = 0; j < n; j++) {
+        let d = M[a][j] - M[b][j];
+        if (dirs[j] === "cost") d = -d;
+        let p = 0;
+        if (d > 0) p = pref === "linear" ? (range[j] > EPS ? Math.min(1, d / range[j]) : 0) : 1;
+        s += w[j] * p;
+      }
+      Pi[a][b] = s;
+    }
+    const div = Math.max(1, m - 1);
+    const phiPlus = rowSums(Pi).map(x => x / div);
+    const phiMinus = colSums(Pi).map(x => x / div);
+    const score = phiPlus.map((p, i) => p - phiMinus[i]);
+    return { score, rank: ranksOf(score), phiPlus, phiMinus, Pi, higherIsBetter: true };
+  }
+
+  const RANKERS = { wsm, topsis, vikor, promethee };
+  function rank(method, M, dirs, w, params = {}) {
+    if (method === "vikor") return vikor(M, dirs, w, params.v ?? 0.5);
+    if (method === "promethee") return promethee(M, dirs, w, params.pref ?? "usual");
+    return RANKERS[method](M, dirs, w);
+  }
+
+  // ---------- 感度分析：1つの基準の重みを 0→1 に動かし、他は比率を保って再配分 ----------
+  function sensitivity(method, M, dirs, w, j, params = {}, steps = 20) {
+    const out = [];
+    for (let k = 0; k <= steps; k++) {
+      const t = k / steps;
+      const rest = 1 - w[j];
+      const w2 = w.map((x, i) => i === j ? t : (rest > EPS ? x * (1 - t) / rest : (1 - t) / (w.length - 1)));
+      const r = rank(method, M, dirs, w2, params);
+      out.push({ t, score: r.score, rank: r.rank });
+    }
+    return out;
+  }
+
+  // 順位の一致度（Spearman）
+  function spearman(r1, r2) {
+    const n = r1.length; if (n < 2) return 1;
+    const d2 = sum(r1.map((x, i) => (x - r2[i]) ** 2));
+    return 1 - 6 * d2 / (n * (n * n - 1));
+  }
+
+  return { dematel, danp, ahp, pairwiseFromScale, entropy, critic, wsm, topsis, vikor, promethee, rank, sensitivity,
+    arithmeticMean, geometricMean, spearman, minMax, ranksOf, normalize, RI };
+})();
+
+
+</script>
+<script>
+"use strict";
+// =====================================================================
+// 状態
+// =====================================================================
+const STORE_KEY = "mcdm-workbench-v1";
+const SAATY = { 1: "同じくらい重要", 2: "同等〜やや重要", 3: "やや重要", 4: "やや〜かなり", 5: "重要", 6: "重要〜かなり", 7: "かなり重要", 8: "かなり〜極めて", 9: "極めて重要" };
+
+function sampleState() {
+  return {
+    version: 1,
+    name: "業務用ノートPCの選定（例）",
+    criteria: [
+      { name: "価格", unit: "千円", dim: "コスト", dir: "cost" },
+      { name: "処理性能", unit: "ベンチ点", dim: "機能", dir: "benefit" },
+      { name: "重量", unit: "kg", dim: "機能", dir: "cost" },
+      { name: "保守サポート", unit: "年", dim: "サービス", dir: "benefit" },
+      { name: "納期", unit: "日", dim: "サービス", dir: "cost" },
+    ],
+    alternatives: ["機種A", "機種B", "機種C", "機種D"],
+    matrix: [
+      [168, 7200, 1.25, 3, 14],
+      [142, 6100, 1.40, 2, 7],
+      [215, 9100, 1.10, 5, 21],
+      [155, 6800, 0.98, 3, 10],
+    ],
+    dematel: { active: 0, resp: [
+      { name: "回答者1", A: [[0,3,1,2,1],[2,0,2,1,0],[1,1,0,0,0],[2,1,0,0,2],[1,0,0,2,0]] },
+      { name: "回答者2", A: [[0,4,1,3,1],[2,0,3,1,1],[1,2,0,0,0],[3,1,0,0,1],[2,0,0,1,0]] },
+    ] },
+    ahp: { active: 0, method: "eig", resp: [
+      { name: "回答者1", S: scaleFrom(5, { "0,1": 1, "0,2": 3, "0,3": 2, "0,4": 3, "1,2": 2, "1,3": 1, "1,4": 2, "2,3": -1, "2,4": 0, "3,4": 1 }) },
+    ] },
+    manual: [0.3, 0.25, 0.15, 0.2, 0.1],
+    weightSource: "danp",
+    combo: { subj: "danp", obj: "entropy" },
+    rank: { v: 0.5, pref: "usual", detail: "topsis" },
+    sens: { method: "topsis", crit: 0, mode: "score" },
+    ui: { wtab: "danp" },
+  };
+}
+function blankState() {
+  return {
+    version: 1, name: "新しい案件",
+    criteria: [{ name: "基準1", unit: "", dim: "", dir: "benefit" }, { name: "基準2", unit: "", dim: "", dir: "benefit" }, { name: "基準3", unit: "", dim: "", dir: "benefit" }],
+    alternatives: ["代替案1", "代替案2", "代替案3"],
+    matrix: [[0, 0, 0], [0, 0, 0], [0, 0, 0]].map(r => r.map(() => "")),
+    dematel: { active: 0, resp: [{ name: "回答者1", A: sq(3, 0) }] },
+    ahp: { active: 0, method: "eig", resp: [{ name: "回答者1", S: sq(3, 0) }] },
+    manual: [1 / 3, 1 / 3, 1 / 3],
+    weightSource: "equal", combo: { subj: "ahp", obj: "entropy" },
+    rank: { v: 0.5, pref: "usual", detail: "topsis" },
+    sens: { method: "topsis", crit: 0, mode: "score" },
+    ui: { wtab: "ahp" },
+  };
+}
+function sq(n, v) { return Array.from({ length: n }, () => new Array(n).fill(v)); }
+function scaleFrom(n, map) { const S = sq(n, 0); Object.entries(map).forEach(([k, v]) => { const [i, j] = k.split(",").map(Number); S[i][j] = v; }); return S; }
+
+let state = loadLocal() || sampleState();
+let view = "setup";
+let R = {}; // 計算結果
+
+function loadLocal() {
+  try { const s = localStorage.getItem(STORE_KEY); if (!s) return null; const o = JSON.parse(s); return validState(o) ? o : null; } catch (e) { return null; }
+}
+let saveTimer = null;
+function saveLocal() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }, 300);
+}
+function validState(o) {
+  if (!o || !Array.isArray(o.criteria) || !Array.isArray(o.alternatives) || !Array.isArray(o.matrix)) return false;
+  const n = o.criteria.length, m = o.alternatives.length;
+  if (o.matrix.length !== m || o.matrix.some(r => r.length !== n)) return false;
+  if (!o.dematel?.resp?.every(r => r.A.length === n)) return false;
+  if (!o.ahp?.resp?.every(r => r.S.length === n)) return false;
+  const d = sampleState();
+  ["combo", "rank", "sens", "ui"].forEach(k => { o[k] = { ...d[k], ...(o[k] || {}) }; });
+  if (!Array.isArray(o.manual) || o.manual.length !== n) o.manual = new Array(n).fill(1 / n);
+  o.ahp.method = o.ahp.method || "eig";
+  return true;
+}
+
+// =====================================================================
+// ユーティリティ
+// =====================================================================
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const f3 = x => (isFinite(x) ? x.toFixed(3) : "—");
+const f4 = x => (isFinite(x) ? x.toFixed(4) : "—");
+const pct = x => (isFinite(x) ? (x * 100).toFixed(1) + "%" : "—");
+const cname = i => state.criteria[i]?.name || `基準${i + 1}`;
+const aname = i => state.alternatives[i] || `代替案${i + 1}`;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 2200); }
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function seriesColor(i) { return i < 8 ? css(`--series-${i + 1}`) : css("--muted"); }
+
+const WEIGHT_METHODS = {
+  equal: { label: "均等", kind: "—" },
+  manual: { label: "直接入力", kind: "主観" },
+  danp: { label: "DANP", kind: "主観・依存関係" },
+  ahp: { label: "AHP", kind: "主観・一対比較" },
+  entropy: { label: "エントロピー法", kind: "客観・データ" },
+  critic: { label: "CRITIC", kind: "客観・データ" },
+  combo: { label: "組合せ", kind: "主観×客観" },
+};
+const RANK_METHODS = {
+  wsm: { label: "加重和（WSM）", short: "WSM", scoreName: "総合得点", better: "大きいほど良い" },
+  topsis: { label: "TOPSIS", short: "TOPSIS", scoreName: "近接度 C", better: "大きいほど良い" },
+  vikor: { label: "VIKOR", short: "VIKOR", scoreName: "Q 値", better: "小さいほど良い" },
+  promethee: { label: "PROMETHEE II", short: "PROMETHEE", scoreName: "正味フロー φ", better: "大きいほど良い" },
+};
+
+// =====================================================================
+// 計算
+// =====================================================================
+function dimIndex() {
+  const names = state.criteria.map(c => (c.dim || "").trim() || "（未分類）");
+  const uniq = [...new Set(names)];
+  return { idx: names.map(n => uniq.indexOf(n)), names: uniq };
+}
+function decisionMatrix() {
+  const M = state.matrix.map(r => r.map(x => (x === "" || x === null ? NaN : Number(x))));
+  const bad = [];
+  M.forEach((r, i) => r.forEach((x, j) => { if (!isFinite(x)) bad.push([i, j]); }));
+  return { M, bad };
+}
+function computeAll() {
+  const n = state.criteria.length, m = state.alternatives.length;
+  const out = { n, m, w: {}, err: {} };
+  const dirs = state.criteria.map(c => c.dir);
+  out.dirs = dirs;
+  // DEMATEL / DANP
+  try {
+    const A = Engine.arithmeticMean(state.dematel.resp.map(r => r.A.map(row => row.map(x => +x || 0))));
+    const di = dimIndex();
+    out.danp = Engine.danp(A, di.idx);
+    out.danp.A = A; out.danp.dimNames = di.names;
+    out.w.danp = out.danp.weights;
+  } catch (e) { out.err.danp = e.message; }
+  // AHP
+  try {
+    const Ps = state.ahp.resp.map(r => Engine.pairwiseFromScale(n, r.S));
+    out.ahpResp = Ps.map(P => Engine.ahp(P, state.ahp.method));
+    const P = Ps.length > 1 ? Engine.geometricMean(Ps) : Ps[0];
+    out.ahp = Engine.ahp(P, state.ahp.method); out.ahp.P = P;
+    out.w.ahp = out.ahp.weights;
+  } catch (e) { out.err.ahp = e.message; }
+  // 決定行列
+  const dm = decisionMatrix();
+  out.M = dm.M;
+  if (m < 2) out.err.matrix = "代替案を2つ以上登録してください。";
+  else if (dm.bad.length) out.err.matrix = `決定行列に未入力または数値でないセルが ${dm.bad.length} 個あります（例: ${aname(dm.bad[0][0])} × ${cname(dm.bad[0][1])}）。`;
+  if (!out.err.matrix) {
+    try { out.entropy = Engine.entropy(dm.M, dirs); out.w.entropy = out.entropy.weights; } catch (e) { out.err.entropy = e.message; }
+    try { out.critic = Engine.critic(dm.M, dirs); out.w.critic = out.critic.weights; } catch (e) { out.err.critic = e.message; }
+  } else { out.err.entropy = out.err.critic = out.err.matrix; }
+  // 直接入力・均等
+  const mw = state.manual.map(x => Math.max(0, +x || 0));
+  out.w.manual = mw.reduce((a, b) => a + b, 0) > 0 ? Engine.normalize(mw) : null;
+  if (!out.w.manual) out.err.manual = "直接入力の重みがすべて0です。";
+  out.w.equal = new Array(n).fill(1 / n);
+  // 組合せ
+  const s = out.w[state.combo.subj], o = out.w[state.combo.obj];
+  if (s && o) out.w.combo = Engine.normalize(s.map((x, i) => x * o[i]));
+  else out.err.combo = `組合せに必要な ${WEIGHT_METHODS[s ? state.combo.obj : state.combo.subj].label} の重みが計算できていません。`;
+  // 採用する重み
+  out.weights = out.w[state.weightSource] || null;
+  if (!out.weights) out.err.weights = `選択中の重み（${WEIGHT_METHODS[state.weightSource].label}）が計算できていません。${out.err[state.weightSource] || ""}`;
+  // 代替案評価
+  out.rank = {};
+  if (out.weights && !out.err.matrix) {
+    const params = { v: +state.rank.v, pref: state.rank.pref };
+    for (const k of Object.keys(RANK_METHODS)) {
+      try { out.rank[k] = Engine.rank(k, dm.M, dirs, out.weights, params); } catch (e) { out.err["rank_" + k] = e.message; }
+    }
+  }
+  R = out;
+  return out;
+}
+
+// =====================================================================
+// 構造の変更（基準・代替案の追加削除）
+// =====================================================================
+function addCriterion() {
+  const n = state.criteria.length;
+  state.criteria.push({ name: `基準${n + 1}`, unit: "", dim: state.criteria[n - 1]?.dim || "", dir: "benefit" });
+  state.matrix.forEach(r => r.push(""));
+  state.dematel.resp.forEach(r => { r.A.forEach(row => row.push(0)); r.A.push(new Array(n + 1).fill(0)); });
+  state.ahp.resp.forEach(r => { r.S.forEach(row => row.push(0)); r.S.push(new Array(n + 1).fill(0)); });
+  state.manual.push(1 / (n + 1));
+}
+function removeCriterion(j) {
+  if (state.criteria.length <= 2) { toast("基準は2つ以上必要です"); return; }
+  state.criteria.splice(j, 1);
+  state.matrix.forEach(r => r.splice(j, 1));
+  [...state.dematel.resp.map(r => r.A), ...state.ahp.resp.map(r => r.S)].forEach(A => { A.splice(j, 1); A.forEach(row => row.splice(j, 1)); });
+  state.manual.splice(j, 1);
+  state.sens.crit = Math.min(state.sens.crit, state.criteria.length - 1);
+}
+function addAlternative() { state.alternatives.push(`代替案${state.alternatives.length + 1}`); state.matrix.push(new Array(state.criteria.length).fill("")); }
+function removeAlternative(i) {
+  if (state.alternatives.length <= 1) { toast("代替案は1つ以上必要です"); return; }
+  state.alternatives.splice(i, 1); state.matrix.splice(i, 1);
+}
+function moveCriterion(j, d) {
+  const k = j + d; if (k < 0 || k >= state.criteria.length) return;
+  const sw = a => { [a[j], a[k]] = [a[k], a[j]]; };
+  sw(state.criteria); state.matrix.forEach(sw); sw(state.manual);
+  state.dematel.resp.forEach(r => { sw(r.A); r.A.forEach(sw); });
+  // AHP は上三角の符号付き値なので、行列に戻して入れ替えてから上三角に戻す
+  state.ahp.resp.forEach(r => {
+    const n = r.S.length, P = Engine.pairwiseFromScale(n, r.S);
+    sw(P); P.forEach(sw);
+    r.S = sq(n, 0);
+    for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) { const v = P[a][b]; r.S[a][b] = v >= 1 ? Math.round(v - 1) : -Math.round(1 / v - 1); }
+  });
+}
+
+// =====================================================================
+// ルーティングと描画
+// =====================================================================
+function go(v) { view = ["setup", "weights", "ranking", "sensitivity", "guide"].includes(v) ? v : "setup"; render(); }
+window.addEventListener("hashchange", () => go(location.hash.slice(1)));
+
+function render() {
+  $$("nav.steps a").forEach(a => { if (a.dataset.v === view) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  $("#projName").value = state.name;
+  computeAll();
+  const main = $("#main");
+  main.innerHTML = `<div id="view" style="display:flex;flex-direction:column;gap:20px">${{ setup: viewSetup, weights: viewWeights, ranking: viewRanking, sensitivity: viewSensitivity, guide: viewGuide }[view]()}</div>`;
+  bind[view]?.($("#view"));
+  if (render._last !== view) window.scrollTo(0, 0);
+  render._last = view;
+  drawCharts();
+}
+// 入力値の変更：入力欄は残したまま、結果部分だけ描き直す
+function refresh() {
+  saveLocal();
+  computeAll();
+  $$("[data-live]").forEach(el => { const fn = LIVE[el.dataset.live]; if (fn) el.innerHTML = fn(); });
+  drawCharts();
+}
+const LIVE = {};
+let chartQueue = [];
+function chart(id, fn) { chartQueue.push([id, fn]); return `<div class="chart" id="${id}"></div>`; }
+function drawCharts() {
+  const q = chartQueue; chartQueue = [];
+  if (typeof Plotly === "undefined") { q.forEach(([id]) => { const el = document.getElementById(id); if (el) el.innerHTML = `<p class="note">グラフ用ライブラリを読み込めませんでした。数値は表で確認できます。</p>`; el && (el.style.minHeight = "0"); }); return; }
+  q.forEach(([id, fn]) => { const el = document.getElementById(id); if (el) { try { fn(el); } catch (e) { console.error(e); } } });
+}
+// 再描画時に chartQueue を作るため、LIVE 関数内でも chart() を呼んでよい
+
+// ---------- Plotly 共通 ----------
+const PCONF = { displayModeBar: false, responsive: true };
+function axis(extra = {}) {
+  const a = { gridcolor: css("--grid"), linecolor: css("--line"), zerolinecolor: css("--line"), tickfont: { color: css("--ink-2"), size: 12 }, automargin: true, ...extra };
+  if (a.title) a.title = { ...a.title, font: { color: css("--ink-2"), size: 12 } };
+  return a;
+}
+function layout(extra = {}) {
+  return {
+    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    font: { family: css("--font-body"), color: css("--ink-2"), size: 12 },
+    margin: { l: 10, r: 24, t: 10, b: 40 }, showlegend: false,
+    hoverlabel: { bgcolor: css("--surface"), bordercolor: css("--line"), font: { color: css("--ink"), family: css("--font-body") } },
+    ...extra,
+  };
+}
+function weightBars(el, labels, values, opts = {}) {
+  const order = values.map((v, i) => i).sort((a, b) => values[b] - values[a]);
+  const y = order.map(i => labels[i]), x = order.map(i => values[i]);
+  Plotly.react(el, [{
+    type: "bar", orientation: "h", x, y, marker: { color: opts.color || css("--series-1"), line: { width: 0 } },
+    text: x.map(v => (opts.fmt || f3)(v)), textposition: "outside", cliponaxis: false, textfont: { color: css("--ink"), family: css("--font-mono") },
+    hovertemplate: `%{y}: %{x:.4f}<extra></extra>`,
+  }], layout({ height: Math.max(160, 34 * labels.length + 50), bargap: 0.35,
+    xaxis: axis({ range: [opts.min ?? 0, (opts.max ?? Math.max(...x, 0)) * 1.18 || 1], title: { text: opts.xtitle || "" }, tickformat: opts.tickformat || ".2f" }),
+    yaxis: axis({ autorange: "reversed", ticksuffix: "  " }),
+    margin: { l: 10, r: 40, t: 6, b: 40 } }), PCONF);
+}
+
+// =====================================================================
+// 画面 1: 基準と代替案
+// =====================================================================
+function viewSetup() {
+  const crit = state.criteria.map((c, j) => `
+    <tr>
+      <td class="muted num">${j + 1}</td>
+      <td><input type="text" id="c-name-${j}" data-c="${j}" data-f="name" value="${esc(c.name)}" aria-label="基準${j + 1}の名前"></td>
+      <td><input type="text" id="c-unit-${j}" data-c="${j}" data-f="unit" value="${esc(c.unit)}" placeholder="例: 円" aria-label="基準${j + 1}の単位"></td>
+      <td><input type="text" id="c-dim-${j}" data-c="${j}" data-f="dim" value="${esc(c.dim)}" placeholder="（任意）" list="dimlist" aria-label="基準${j + 1}の次元"></td>
+      <td><select id="c-dir-${j}" data-c="${j}" data-f="dir" aria-label="基準${j + 1}の方向">
+        <option value="benefit" ${c.dir === "benefit" ? "selected" : ""}>大きいほど良い（便益）</option>
+        <option value="cost" ${c.dir === "cost" ? "selected" : ""}>小さいほど良い（費用）</option></select></td>
+      <td class="row" style="flex-wrap:nowrap">
+        <button class="btn ghost small" data-mv="${j}" data-d="-1" type="button" aria-label="上へ" ${j === 0 ? "disabled" : ""}>↑</button>
+        <button class="btn ghost small" data-mv="${j}" data-d="1" type="button" aria-label="下へ" ${j === state.criteria.length - 1 ? "disabled" : ""}>↓</button>
+        <button class="btn ghost small danger" data-delc="${j}" type="button">削除</button></td>
+    </tr>`).join("");
+  const dims = [...new Set(state.criteria.map(c => c.dim).filter(Boolean))];
+  const alts = state.alternatives.map((a, i) => `
+    <tr><td class="muted num">${i + 1}</td>
+      <td><input type="text" id="a-name-${i}" data-a="${i}" value="${esc(a)}" aria-label="代替案${i + 1}の名前"></td>
+      <td><button class="btn ghost small danger" data-dela="${i}" type="button">削除</button></td></tr>`).join("");
+  const dmHead = state.criteria.map((c, j) => `<th class="n">${esc(c.name)}${c.unit ? `<span class="muted">（${esc(c.unit)}）</span>` : ""}<br><span class="dir pill ${c.dir}">${c.dir === "cost" ? "小さいほど良い" : "大きいほど良い"}</span></th>`).join("");
+  const dmRows = state.alternatives.map((a, i) => `<tr><th>${esc(a)}</th>${state.criteria.map((c, j) =>
+    `<td><input class="n" type="number" step="any" id="dm-${i}-${j}" data-dm="${i},${j}" value="${esc(state.matrix[i][j])}" aria-label="${esc(a)} の ${esc(c.name)}"></td>`).join("")}</tr>`).join("");
+  return `
+  <div class="head"><h2>1. 基準と代替案</h2>
+    <p>比較に使う「基準」と、選択肢である「代替案」を登録します。基準の重み付けだけを行う場合、代替案と決定行列は空のままでも構いません（エントロピー法・CRITICと代替案の評価には必要です）。</p></div>
+  <section class="card">
+    <header><h3>評価基準</h3><p>次元は DANP で基準をグループ化するときに使います。空欄なら全基準を1つのグループとして扱います。</p></header>
+    <div class="tw"><table class="edit"><thead><tr><th>#</th><th>基準名</th><th>単位</th><th>次元（グループ）</th><th>評価の方向</th><th></th></tr></thead><tbody>${crit}</tbody></table></div>
+    <datalist id="dimlist">${dims.map(d => `<option value="${esc(d)}">`).join("")}</datalist>
+    <div class="row"><button class="btn" id="addC" type="button">＋ 基準を追加</button><span class="small muted">基準数 ${state.criteria.length}（AHPは9以下を推奨）</span></div>
+  </section>
+  <div class="grid2">
+  <section class="card" style="max-width:520px">
+    <header><h3>代替案</h3></header>
+    <div class="tw"><table class="edit"><thead><tr><th>#</th><th>代替案名</th><th></th></tr></thead><tbody>${alts}</tbody></table></div>
+    <div class="row"><button class="btn" id="addA" type="button">＋ 代替案を追加</button></div>
+  </section>
+  </div>
+  <section class="card">
+    <header><h3>決定行列</h3><p>各代替案の基準ごとの実測値・評価値を入力します。単位は基準ごとに異なっていて構いません（計算時に正規化します）。</p></header>
+    <div class="tw"><table class="edit dm"><thead><tr><th>代替案</th>${dmHead}</tr></thead><tbody>${dmRows}</tbody></table></div>
+    <div data-live="dmStatus">${LIVE.dmStatus()}</div>
+  </section>`;
+}
+LIVE.dmStatus = () => R.err.matrix ? `<p class="warnbox small">${esc(R.err.matrix)}</p>` : `<p class="small muted">入力済み：${R.m} 代替案 × ${R.n} 基準</p>`;
+const bind = {};
+bind.setup = el => {
+  $$("[data-c]", el).forEach(inp => inp.addEventListener("change", () => {
+    const j = +inp.dataset.c; state.criteria[j][inp.dataset.f] = inp.value.trim(); saveLocal(); render();
+    document.getElementById(inp.id)?.focus();
+  }));
+  $$("[data-a]", el).forEach(inp => inp.addEventListener("change", () => { state.alternatives[+inp.dataset.a] = inp.value.trim() || `代替案${+inp.dataset.a + 1}`; saveLocal(); render(); }));
+  $$("[data-dm]", el).forEach(inp => inp.addEventListener("input", () => { const [i, j] = inp.dataset.dm.split(",").map(Number); state.matrix[i][j] = inp.value === "" ? "" : Number(inp.value); refresh(); }));
+  $("#addC", el).onclick = () => { addCriterion(); saveLocal(); render(); $(`#c-name-${state.criteria.length - 1}`)?.select(); };
+  $("#addA", el).onclick = () => { addAlternative(); saveLocal(); render(); $(`#a-name-${state.alternatives.length - 1}`)?.select(); };
+  $$("[data-delc]", el).forEach(b => b.onclick = () => { removeCriterion(+b.dataset.delc); saveLocal(); render(); });
+  $$("[data-dela]", el).forEach(b => b.onclick = () => { removeAlternative(+b.dataset.dela); saveLocal(); render(); });
+  $$("[data-mv]", el).forEach(b => b.onclick = () => { moveCriterion(+b.dataset.mv, +b.dataset.d); saveLocal(); render(); });
+};
+
+// =====================================================================
+// 画面 2: 重み付け
+// =====================================================================
+const WTABS = [
+  ["danp", "DEMATEL / DANP", "依存関係あり"],
+  ["ahp", "AHP", "一対比較"],
+  ["entropy", "エントロピー法", "データ"],
+  ["critic", "CRITIC", "データ"],
+  ["manual", "直接入力", ""],
+];
+function viewWeights() {
+  const tab = state.ui.wtab;
+  return `
+  <div class="head"><h2>2. 基準の重み付け</h2>
+    <p>複数の手法で重みを出し、比較したうえで「評価に使う重み」を1つ選びます。どれを使うか迷ったら<a href="#guide">手法の選び方</a>を参照してください。</p></div>
+  <section class="card">
+    <header><h3>重みの比較と採用</h3><p>行の手法名を選ぶと、その重みで代替案を評価します。</p></header>
+    <div data-live="wcompare">${LIVE.wcompare()}</div>
+  </section>
+  <section class="card">
+    <div class="tabs" role="tablist">${WTABS.map(([k, l, s]) => `<button role="tab" type="button" aria-selected="${k === tab}" data-wtab="${k}">${l}${s ? `<span class="sub">${s}</span>` : ""}</button>`).join("")}</div>
+    ${({ danp: paneDanp, ahp: paneAhp, entropy: paneEntropy, critic: paneCritic, manual: paneManual })[tab]()}
+  </section>`;
+}
+LIVE.wcompare = () => {
+  const n = R.n, keys = ["danp", "ahp", "entropy", "critic", "manual", "equal", "combo"];
+  const head = `<tr><th>採用</th><th>手法</th><th>種類</th>${state.criteria.map(c => `<th class="n">${esc(c.name)}</th>`).join("")}<th>状態</th></tr>`;
+  const rows = keys.map(k => {
+    const w = R.w[k], sel = state.weightSource === k;
+    const comboCtl = k === "combo" ? `<span class="row" style="gap:4px;flex-wrap:nowrap">
+      <select id="combo-subj" aria-label="組合せの主観重み">${["danp", "ahp", "manual"].map(x => `<option value="${x}" ${state.combo.subj === x ? "selected" : ""}>${WEIGHT_METHODS[x].label}</option>`).join("")}</select>×
+      <select id="combo-obj" aria-label="組合せの客観重み">${["entropy", "critic"].map(x => `<option value="${x}" ${state.combo.obj === x ? "selected" : ""}>${WEIGHT_METHODS[x].label}</option>`).join("")}</select></span>` : WEIGHT_METHODS[k].label;
+    const status = w ? (k === "ahp" ? crPill(R.ahp.CR) : `<span class="pill good">計算済み</span>`) : `<span class="pill bad" title="${esc(R.err[k] || "")}">計算できません</span>`;
+    return `<tr class="${sel ? "hl" : ""}">
+      <td><input type="radio" name="wsrc" id="wsrc-${k}" value="${k}" ${sel ? "checked" : ""} ${w ? "" : "disabled"} aria-label="${WEIGHT_METHODS[k].label} を採用"></td>
+      <td>${k === "combo" ? comboCtl : `<label for="wsrc-${k}">${comboCtl}</label>`}</td><td class="small muted">${WEIGHT_METHODS[k].kind}</td>
+      ${w ? w.map(x => `<td class="n">${f3(x)}</td>`).join("") : `<td colspan="${n}" class="small muted">${esc(R.err[k] || "")}</td>`}
+      <td>${status}</td></tr>`;
+  }).join("");
+  const w = R.weights;
+  return `<div class="tw"><table>${head}${rows}</table></div>
+    ${w ? `<div><p class="small muted" style="margin-bottom:4px">採用中：<b>${WEIGHT_METHODS[state.weightSource].label}</b> の重み</p>${chart("chWsel", el => weightBars(el, state.criteria.map(c => c.name), w))}</div>` : `<p class="err">${esc(R.err.weights)}</p>`}
+    <div class="row"><button class="btn small" id="csvW" type="button">重みの比較表をCSVで保存</button></div>`;
+};
+function crPill(cr) {
+  if (!isFinite(cr)) return "";
+  return cr < 0.1 ? `<span class="pill good">CR ${cr.toFixed(3)}・整合</span>` : cr < 0.2 ? `<span class="pill warn">CR ${cr.toFixed(3)}・要見直し</span>` : `<span class="pill bad">CR ${cr.toFixed(3)}・不整合</span>`;
+}
+
+// ---- 回答者タブ（DEMATEL と AHP 共通） ----
+function respBar(kind) {
+  const S = state[kind];
+  return `<div class="row" style="justify-content:space-between">
+    <div class="chips" role="group" aria-label="回答者">${S.resp.map((r, i) => `<button class="chip" type="button" data-resp="${kind},${i}" aria-pressed="${i === S.active}">${esc(r.name)}${kind === "ahp" && R.ahpResp ? ` ${crDot(R.ahpResp[i].CR)}` : ""}</button>`).join("")}
+      <button class="chip" type="button" data-addresp="${kind}">＋ 回答者を追加</button></div>
+    <div class="row"><label class="small muted" for="respName">名前</label><input id="respName" type="text" value="${esc(S.resp[S.active].name)}" style="border:1px solid var(--line);border-radius:5px;padding:3px 8px;width:140px;background:var(--surface)">
+      ${S.resp.length > 1 ? `<button class="btn ghost small danger" type="button" data-delresp="${kind}">この回答者を削除</button>` : ""}</div></div>
+    <p class="small muted">回答者 ${S.resp.length} 名${S.resp.length > 1 ? `の${kind === "ahp" ? "幾何平均（一対比較行列の要素ごと）" : "算術平均（直接影響行列の要素ごと）"}で計算します。` : "。複数人の回答を集約する場合は回答者を追加してください。"}</p>`;
+}
+function crDot(cr) { const c = cr < 0.1 ? "good" : cr < 0.2 ? "warn" : "bad"; return `<span class="pill ${c}" style="padding:0 6px;font-size:11px">${cr.toFixed(2)}</span>`; }
+function bindResp(el, kind) {
+  const S = state[kind];
+  $$("[data-resp]", el).forEach(b => b.onclick = () => { S.active = +b.dataset.resp.split(",")[1]; saveLocal(); render(); });
+  $$("[data-addresp]", el).forEach(b => b.onclick = () => {
+    const base = S.resp[S.active];
+    const copy = JSON.parse(JSON.stringify(kind === "ahp" ? base.S : base.A));
+    S.resp.push(kind === "ahp" ? { name: `回答者${S.resp.length + 1}`, S: copy.map(r => r.map(() => 0)) } : { name: `回答者${S.resp.length + 1}`, A: copy.map(r => r.map(() => 0)) });
+    S.active = S.resp.length - 1; saveLocal(); render(); toast("空の回答を追加しました");
+  });
+  $$("[data-delresp]", el).forEach(b => b.onclick = () => { S.resp.splice(S.active, 1); S.active = Math.max(0, S.active - 1); saveLocal(); render(); });
+  const nm = $("#respName", el); if (nm) nm.addEventListener("change", () => { S.resp[S.active].name = nm.value.trim() || `回答者${S.active + 1}`; saveLocal(); render(); });
+}
+
+// ---- DEMATEL / DANP ----
+function paneDanp() {
+  const S = state.dematel, A = S.resp[S.active].A, n = R.n;
+  const grid = `<table class="mx"><thead><tr><th class="rowh">影響を与える ＼ 受ける</th>${state.criteria.map(c => `<th>${esc(c.name)}</th>`).join("")}</tr></thead><tbody>
+    ${A.map((row, i) => `<tr><th class="rowh">${esc(cname(i))}</th>${row.map((x, j) => i === j ? `<td class="diag">—</td>` :
+      `<td class="v${x}"><input class="n" type="number" min="0" max="4" step="1" id="dm-a-${i}-${j}" data-dem="${i},${j}" value="${x}" aria-label="${esc(cname(i))} から ${esc(cname(j))} への影響"></td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  return `
+    <div class="note">DEMATELで基準どうしの影響関係（原因・結果）を分析し、その総合影響行列からDANP（DEMATEL型ANP）で重みを求めます。基準が互いに影響し合う場合に適しています。</div>
+    ${respBar("dematel")}
+    <div><h3 style="margin-bottom:6px">直接影響行列（${esc(S.resp[S.active].name)}）</h3>
+      <p class="small muted" style="margin-bottom:8px">行の基準が列の基準に与える影響の強さ：0 影響なし／1 弱い／2 中程度／3 強い／4 非常に強い</p>
+      <div class="tw">${grid}</div></div>
+    <div data-live="danpRes">${LIVE.danpRes()}</div>`;
+}
+LIVE.danpRes = () => {
+  if (R.err.danp) return `<p class="err">${esc(R.err.danp)}</p>`;
+  const d = R.danp, n = R.n;
+  const multiDim = d.groups.length > 1;
+  const rel = state.criteria.map((c, i) => ({ i, D: d.D[i], R: d.R[i], P: d.prominence[i], E: d.relation[i] }));
+  const dimRows = multiDim ? d.groups.map((g, a) => `<tr><td>${esc(d.dimNames[a])}</td><td class="n">${f3(d.dimWeights[a])}</td><td>${g.map(i => esc(cname(i))).join("、")}</td></tr>`).join("") : "";
+  const mats = [["A", "集約した直接影響行列 A", d.A, false], ["X", "正規化直接影響行列 X", d.X], ["T", "総合影響行列 T", d.T], ["Talpha", "正規化総合影響行列 Tα（次元ブロック内で行正規化）", d.Talpha], ["W", "無重み超行列 W = (Tα)'", d.W], ["Wa", "重み付き超行列 Wα", d.Wa]];
+  return `
+    <div class="grid2" style="margin-top:6px">
+      <div><h3>DANP の重み</h3>${!d.converged ? `<p class="warnbox small">極限超行列が完全には収束しなかったため、べき乗の平均で近似しました。</p>` : ""}
+        ${chart("chDanp", el => weightBars(el, state.criteria.map(c => c.name), d.weights))}
+        ${multiDim ? `<div class="tw"><table><tr><th>次元</th><th class="n">次元の重み</th><th>含まれる基準</th></tr>${dimRows}</table></div>` :
+        `<p class="small muted">次元が設定されていないため、全基準を1つのグループとして計算しています。工程1で次元を入れると、次元間の影響（T<sub>D</sub>）も重みに反映されます。</p>`}
+      </div>
+      <div><h3>影響関係マップ</h3>
+        <p class="small muted">横軸 D+R（中心度：関係の強さ）、縦軸 D−R（原因度：正なら他に影響を与える原因側）。矢印はしきい値 ${f3(d.threshold)}（T の非対角平均）を超える影響。</p>
+        ${chart("chMap", el => drawMap(el, d))}</div>
+    </div>
+    <div class="tw"><table><thead><tr><th>基準</th><th class="n">D 与える影響</th><th class="n">R 受ける影響</th><th class="n">D+R 中心度</th><th class="n">D−R 原因度</th><th>区分</th><th class="n">DANP 重み</th>${multiDim ? `<th class="n">次元内の重み</th>` : ""}</tr></thead><tbody>
+      ${rel.map(r => `<tr><td>${esc(cname(r.i))}</td><td class="n">${f3(r.D)}</td><td class="n">${f3(r.R)}</td><td class="n">${f3(r.P)}</td><td class="n">${f3(r.E)}</td>
+        <td>${r.E >= 0 ? `<span class="pill" style="color:var(--series-2);border-color:var(--series-2)">原因</span>` : `<span class="pill" style="color:var(--series-1);border-color:var(--series-1)">結果</span>`}</td>
+        <td class="n">${f4(d.weights[r.i])}</td>${multiDim ? `<td class="n">${f3(d.localWeights[r.i])}</td>` : ""}</tr>`).join("")}</tbody></table></div>
+    <div><h3 style="margin-bottom:6px">主な影響関係（しきい値超）</h3>
+      ${d.links.length ? `<p class="small">${d.links.slice(0, 12).map(l => `${esc(cname(l.from))} → ${esc(cname(l.to))} <span class="num muted">${f3(l.value)}</span>`).join("　／　")}${d.links.length > 12 ? `　ほか ${d.links.length - 12} 件` : ""}</p>` : `<p class="small muted">しきい値を超える影響はありません。</p>`}</div>
+    <details><summary>中間計算結果（行列）を表示</summary>
+      ${multiDim ? matTable("次元間の総合影響行列 T_D", d.TD, d.dimNames) + matTable("正規化 T_Dα", d.TDalpha, d.dimNames) : ""}
+      ${mats.map(([k, label, M]) => matTable(label, M)).join("")}
+      <p class="small muted">正規化係数 s = ${f3(d.s)}（行和・列和の最大値）。極限は列確率行列のべき乗法（${d.iterations} 回）で求めています。</p>
+    </details>`;
+};
+function matTable(label, M, names) {
+  const nm = names || state.criteria.map(c => c.name);
+  return `<p class="small" style="margin:10px 0 4px"><b>${esc(label)}</b></p><div class="tw"><table class="mx"><tr><th></th>${nm.map(x => `<th>${esc(x)}</th>`).join("")}</tr>${M.map((r, i) => `<tr><th class="rowh">${esc(nm[i])}</th>${r.map(x => `<td class="num">${Number.isInteger(x) ? x : x.toFixed(4)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+function drawMap(el, d) {
+  const n = R.n, names = state.criteria.map(c => c.name);
+  const cause = [...Array(n).keys()].filter(i => d.relation[i] >= 0), eff = [...Array(n).keys()].filter(i => d.relation[i] < 0);
+  const tr = (idx, name, color) => ({ type: "scatter", mode: "markers+text", name, x: idx.map(i => d.prominence[i]), y: idx.map(i => d.relation[i]), text: idx.map(i => names[i]),
+    textposition: "top center", textfont: { color: css("--ink"), size: 12 }, marker: { size: 12, color, line: { width: 2, color: css("--surface") } },
+    hovertemplate: "%{text}<br>D+R %{x:.3f}<br>D−R %{y:.3f}<extra></extra>" });
+  const xs = d.prominence, ys = d.relation;
+  const xr = [Math.min(...xs), Math.max(...xs)], yr = [Math.min(...ys, 0), Math.max(...ys, 0)];
+  const px = (xr[1] - xr[0]) * 0.18 || 0.5, py = (yr[1] - yr[0]) * 0.25 || 0.5;
+  const ann = d.links.slice(0, 15).map(l => ({ x: xs[l.to], y: ys[l.to], ax: xs[l.from], ay: ys[l.from], xref: "x", yref: "y", axref: "x", ayref: "y",
+    showarrow: true, arrowhead: 2, arrowsize: 1, arrowwidth: 1.2, arrowcolor: css("--muted"), standoff: 9, startstandoff: 9, opacity: 0.8, text: "" }));
+  Plotly.react(el, [tr(cause, "原因グループ（D−R ≥ 0）", css("--series-2")), tr(eff, "結果グループ（D−R < 0）", css("--series-1"))],
+    layout({ height: 340, showlegend: true, legend: { orientation: "h", y: -0.22, font: { color: css("--ink-2") } }, annotations: ann,
+      shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: 0, y1: 0, line: { color: css("--muted"), dash: "dash", width: 1 } }],
+      xaxis: axis({ title: { text: "D+R（中心度）" }, range: [xr[0] - px, xr[1] + px] }), yaxis: axis({ title: { text: "D−R（原因度）" }, range: [yr[0] - py, yr[1] + py], zeroline: false }),
+      margin: { l: 10, r: 16, t: 10, b: 20 } }), PCONF);
+}
+bind.weights = el => {
+  $$("[data-wtab]", el).forEach(b => b.onclick = () => { state.ui.wtab = b.dataset.wtab; saveLocal(); render(); });
+  el.addEventListener("change", e => {
+    const t = e.target;
+    if (t.name === "wsrc") { state.weightSource = t.value; saveLocal(); refresh(); }
+    if (t.id === "combo-subj") { state.combo.subj = t.value; refresh(); }
+    if (t.id === "combo-obj") { state.combo.obj = t.value; refresh(); }
+    if (t.name === "ahpm") { state.ahp.method = t.value; refresh(); }
+  });
+  el.addEventListener("click", e => { if (e.target.id === "csvW") exportWeightsCsv(); });
+  const tab = state.ui.wtab;
+  if (tab === "danp") {
+    bindResp(el, "dematel");
+    $$("[data-dem]", el).forEach(inp => inp.addEventListener("input", () => {
+      const [i, j] = inp.dataset.dem.split(",").map(Number);
+      let v = Math.round(Number(inp.value)); if (!isFinite(v)) v = 0; v = Math.max(0, Math.min(4, v));
+      state.dematel.resp[state.dematel.active].A[i][j] = v;
+      inp.parentElement.className = `v${v}`;
+      if (inp.value !== "" && String(v) !== inp.value) inp.value = v;
+      refresh();
+    }));
+  }
+  if (tab === "ahp") {
+    bindResp(el, "ahp");
+    $$("[data-pair]", el).forEach(inp => inp.addEventListener("input", () => {
+      const [i, j] = inp.dataset.pair.split(",").map(Number);
+      const v = -Number(inp.value); // 左（基準i）に寄せるほど i が重要
+      state.ahp.resp[state.ahp.active].S[i][j] = v;
+      $(`#plab-${i}-${j}`).innerHTML = pairLabel(i, j, v);
+      $$(`[data-side="${i},${j}"]`).forEach(s => s.classList.toggle("win", (s.dataset.who === "i" && v > 0) || (s.dataset.who === "j" && v < 0)));
+      refresh(); markFlags();
+    }));
+    markFlags();
+  }
+  if (tab === "manual") {
+    $$("[data-man]", el).forEach(inp => inp.addEventListener("input", () => { state.manual[+inp.dataset.man] = inp.value === "" ? 0 : Number(inp.value); refresh(); }));
+  }
+};
+
+// ---- AHP ----
+function pairLabel(i, j, v) {
+  if (v === 0) return `<span class="muted">同じくらい重要（1）</span>`;
+  const k = Math.abs(v) + 1, win = v > 0 ? cname(i) : cname(j);
+  return `<b>${esc(win)}</b> が${SAATY[k]}（${k}）`;
+}
+function paneAhp() {
+  const S = state.ahp, sc = S.resp[S.active].S, n = R.n;
+  const rows = [];
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const v = sc[i][j] || 0;
+    rows.push(`<div class="pair" data-pr="${i},${j}">
+      <span class="l ${v > 0 ? "win" : ""}" data-side="${i},${j}" data-who="i">${esc(cname(i))}</span>
+      <div class="slider"><input type="range" min="-8" max="8" step="1" value="${-v}" id="pair-${i}-${j}" data-pair="${i},${j}" aria-label="${esc(cname(i))} と ${esc(cname(j))} の比較">
+        <div class="ticks" aria-hidden="true"><span>9</span><span>7</span><span>5</span><span>3</span><span>1</span><span>3</span><span>5</span><span>7</span><span>9</span></div></div>
+      <span class="${v < 0 ? "win" : ""}" data-side="${i},${j}" data-who="j">${esc(cname(j))}</span>
+      <span class="lab" id="plab-${i}-${j}">${pairLabel(i, j, v)}</span></div>`);
+  }
+  return `
+    <div class="note">2つずつ基準を比べ、どちらがどれだけ重要かを答えます（Saatyの1〜9尺度）。スライダーを重要な側へ寄せてください。整合比 CR が 0.1 未満なら回答は一貫しています。</div>
+    ${respBar("ahp")}
+    <div class="row"><span class="small muted">重みの算出法</span>
+      <label class="chip"><input type="radio" name="ahpm" value="eig" ${S.method === "eig" ? "checked" : ""}> 固有ベクトル法</label>
+      <label class="chip"><input type="radio" name="ahpm" value="geo" ${S.method === "geo" ? "checked" : ""}> 幾何平均法</label></div>
+    <div><h3 style="margin-bottom:6px">一対比較（${esc(S.resp[S.active].name)}）<span class="small muted" style="font-weight:400">　${n * (n - 1) / 2} 組</span></h3>
+      <div class="pairs">${rows.join("")}</div></div>
+    <div data-live="ahpRes">${LIVE.ahpRes()}</div>`;
+}
+function markFlags() {
+  const a = R.ahpResp?.[state.ahp.active]; if (!a) return;
+  const top = a.CR >= 0.1 ? a.pairs.slice(0, 2).map(p => `${p.i},${p.j}`) : [];
+  $$(".pair").forEach(p => p.classList.toggle("flag", top.includes(p.dataset.pr)));
+}
+LIVE.ahpRes = () => {
+  if (R.err.ahp) return `<p class="err">${esc(R.err.ahp)}</p>`;
+  const a = R.ahp, me = R.ahpResp[state.ahp.active], n = R.n;
+  const advice = me.CR >= 0.1 ? `<div class="warnbox small">${esc(state.ahp.resp[state.ahp.active].name)} の回答は整合比 CR = ${me.CR.toFixed(3)} で、0.1 を超えています。黄色で示した比較が、他の回答から推定される比率と最も食い違っています：
+      ${me.pairs.slice(0, 2).map(p => `<br>・${esc(cname(p.i))} 対 ${esc(cname(p.j))}：回答 ${ratio(p.given)}、他の回答からの推定 ${ratio(p.implied)}`).join("")}</div>` : "";
+  return `
+    ${advice}
+    <div class="kpis">
+      <div class="kpi"><span>整合比 CR${state.ahp.resp.length > 1 ? "（集約後）" : ""}</span><b>${a.CR.toFixed(3)}</b>${crPill(a.CR)}</div>
+      <div class="kpi"><span>最大固有値 λmax</span><b>${a.lambdaMax.toFixed(3)}</b><span>基準数 n = ${n}</span></div>
+      <div class="kpi"><span>整合度 CI ／ 乱数指標 RI</span><b>${a.CI.toFixed(3)}</b><span>RI = ${a.RI.toFixed(2)}</span></div>
+    </div>
+    <div class="grid2">
+      <div><h3>AHP の重み</h3>${chart("chAhp", el => weightBars(el, state.criteria.map(c => c.name), a.weights))}</div>
+      <div><h3>回答者別</h3><div class="tw"><table><tr><th>回答者</th><th class="n">CR</th>${state.criteria.map(c => `<th class="n">${esc(c.name)}</th>`).join("")}</tr>
+        ${R.ahpResp.map((r, k) => `<tr><td>${esc(state.ahp.resp[k].name)}</td><td class="n">${crDot(r.CR)}</td>${r.weights.map(x => `<td class="n">${f3(x)}</td>`).join("")}</tr>`).join("")}</table></div></div>
+    </div>
+    <details><summary>一対比較行列を表示</summary>${matTable(state.ahp.resp.length > 1 ? "集約した一対比較行列（幾何平均）" : "一対比較行列", a.P)}</details>`;
+};
+function ratio(x) { return x >= 1 ? `${x.toFixed(2)} 倍` : `1/${(1 / x).toFixed(2)}`; }
+
+// ---- エントロピー / CRITIC / 直接入力 ----
+function paneEntropy() {
+  return `<div class="note">決定行列のばらつきから重みを求めます。代替案の間で差が大きい基準ほど、判別に役立つとみなして重みが大きくなります。人の判断を使わない客観的な重みです。</div>
+    <div data-live="entRes">${LIVE.entRes()}</div>`;
+}
+LIVE.entRes = () => {
+  if (R.err.entropy) return `<p class="err">${esc(R.err.entropy)}　<a href="#setup">工程1で入力する</a></p>`;
+  const e = R.entropy;
+  return `<div class="grid2"><div><h3>エントロピー法の重み</h3>${chart("chEnt", el => weightBars(el, state.criteria.map(c => c.name), e.weights))}</div>
+    <div class="tw"><table><tr><th>基準</th><th class="n">エントロピー E</th><th class="n">多様度 1−E</th><th class="n">重み</th></tr>
+    ${e.E.map((x, j) => `<tr><td>${esc(cname(j))}</td><td class="n">${f4(x)}</td><td class="n">${f4(e.d[j])}</td><td class="n">${f4(e.weights[j])}</td></tr>`).join("")}</table>
+    <p class="small muted" style="margin-top:8px">各基準を評価の方向に合わせて0〜1に正規化（min-max）してから計算しています。</p></div></div>`;
+};
+function paneCritic() {
+  return `<div class="note">CRITIC は、基準のばらつき（標準偏差）と、他の基準との相関の低さ（独自性）の両方から重みを求めます。似た情報を持つ基準が多いとき、重複を抑えられます。</div>
+    <div data-live="criRes">${LIVE.criRes()}</div>`;
+}
+LIVE.criRes = () => {
+  if (R.err.critic) return `<p class="err">${esc(R.err.critic)}　<a href="#setup">工程1で入力する</a></p>`;
+  const c = R.critic;
+  return `<div class="grid2"><div><h3>CRITIC の重み</h3>${chart("chCri", el => weightBars(el, state.criteria.map(c => c.name), c.weights))}</div>
+    <div class="tw"><table><tr><th>基準</th><th class="n">標準偏差 σ</th><th class="n">情報量 C</th><th class="n">重み</th></tr>
+    ${c.sd.map((x, j) => `<tr><td>${esc(cname(j))}</td><td class="n">${f4(x)}</td><td class="n">${f4(c.C[j])}</td><td class="n">${f4(c.weights[j])}</td></tr>`).join("")}</table></div></div>
+    <details><summary>基準間の相関行列を表示</summary>${matTable("相関係数（正規化後）", c.corr)}</details>`;
+};
+function paneManual() {
+  return `<div class="note">合意済みの重みがある場合や、他のツールで求めた重みを使う場合に直接入力します。合計が1でなくても、比率に合わせて自動で正規化します。</div>
+    <div class="tw"><table class="edit" style="width:auto"><tr><th>基準</th><th>入力値</th></tr>
+    ${state.criteria.map((c, j) => `<tr><td>${esc(c.name)}</td><td><input class="n" type="number" min="0" step="any" id="man-${j}" data-man="${j}" value="${esc(state.manual[j])}" aria-label="${esc(c.name)} の重み"></td></tr>`).join("")}</table></div>
+    <div data-live="manRes">${LIVE.manRes()}</div>`;
+}
+LIVE.manRes = () => R.err.manual ? `<p class="err">${esc(R.err.manual)}</p>` : `<h3>正規化後の重み</h3>${chart("chMan", el => weightBars(el, state.criteria.map(c => c.name), R.w.manual))}`;
+
+// =====================================================================
+// 画面 3: 代替案の評価
+// =====================================================================
+function viewRanking() {
+  return `
+  <div class="head"><h2>3. 代替案の評価</h2>
+    <p>工程2で採用した重みと決定行列から、4つの手法で代替案を順位付けします。手法によって考え方が異なるため、順位が一致するかを確かめると結論の確からしさが分かります。</p></div>
+  <section class="card">
+    <header><h3>評価条件</h3></header>
+    <div class="row" style="gap:20px">
+      <div>使用する重み：<b>${WEIGHT_METHODS[state.weightSource].label}</b> <a href="#weights" class="small">変更</a></div>
+      <div class="row"><label for="vikv">VIKOR の v（多数の満足を重視する度合い）</label><input type="range" id="vikv" min="0" max="1" step="0.05" value="${state.rank.v}" style="accent-color:var(--accent)"><span class="num" id="vikvl">${(+state.rank.v).toFixed(2)}</span></div>
+      <div class="row"><label for="ppref">PROMETHEE の選好関数</label><select id="ppref"><option value="usual" ${state.rank.pref === "usual" ? "selected" : ""}>通常型（少しでも良ければ選好）</option><option value="linear" ${state.rank.pref === "linear" ? "selected" : ""}>線形型（差に比例して選好）</option></select></div>
+    </div>
+  </section>
+  <div data-live="rankAll">${LIVE.rankAll()}</div>`;
+}
+LIVE.rankAll = () => {
+  if (R.err.matrix) return `<p class="err">${esc(R.err.matrix)}　<a href="#setup">工程1で入力する</a></p>`;
+  if (!R.weights) return `<p class="err">${esc(R.err.weights)}　<a href="#weights">工程2で重みを選ぶ</a></p>`;
+  const keys = Object.keys(RANK_METHODS).filter(k => R.rank[k]);
+  const m = R.m;
+  const meanRank = [...Array(m).keys()].map(i => keys.reduce((s, k) => s + R.rank[k].rank[i], 0) / keys.length);
+  const order = [...Array(m).keys()].sort((a, b) => meanRank[a] - meanRank[b]);
+  const agree = keys.every(k => R.rank[k].rank[order[0]] === 1);
+  const pairsS = [];
+  for (let a = 0; a < keys.length; a++) for (let b = a + 1; b < keys.length; b++) pairsS.push([keys[a], keys[b], Engine.spearman(R.rank[keys[a]].rank, R.rank[keys[b]].rank)]);
+  const minS = Math.min(...pairsS.map(p => p[2]));
+  const det = state.rank.detail;
+  return `
+  <section class="card">
+    <header><h3>総合結果</h3><p>平均順位の良い順に並べています。</p></header>
+    <div class="kpis">
+      <div class="kpi"><span>平均順位が最も良い代替案</span><b style="font-family:var(--font-display);font-weight:700">${esc(aname(order[0]))}</b><span>平均 ${meanRank[order[0]].toFixed(2)} 位</span></div>
+      <div class="kpi"><span>1位の一致</span><b style="font-size:15px;font-family:var(--font-body)">${agree ? `<span class="pill good">全手法で1位</span>` : `<span class="pill warn">手法により1位が異なる</span>`}</b></div>
+      <div class="kpi"><span>手法間の順位相関（Spearman 最小値）</span><b>${minS.toFixed(2)}</b>${minS >= 0.8 ? `<span class="pill good">よく一致</span>` : minS >= 0.5 ? `<span class="pill warn">おおむね一致</span>` : `<span class="pill bad">食い違いあり</span>`}</div>
+      ${R.rank.vikor ? `<div class="kpi"><span>VIKOR の妥協解</span><b style="font-size:15px;font-family:var(--font-body)">${R.rank.vikor.compromise.map(i => esc(aname(i))).join("、")}</b><span>条件 C1 ${R.rank.vikor.C1 ? "○" : "×"}／C2 ${R.rank.vikor.C2 ? "○" : "×"}</span></div>` : ""}
+    </div>
+    <div class="tw"><table><thead><tr><th>代替案</th>${keys.map(k => `<th class="n">${RANK_METHODS[k].short}</th>`).join("")}<th class="n">平均順位</th></tr></thead><tbody>
+      ${order.map(i => `<tr class="${i === order[0] ? "hl" : ""}"><td>${esc(aname(i))}</td>${keys.map(k => { const r = R.rank[k].rank[i]; return `<td class="n">${r === 1 ? `<span class="pill good">1位</span>` : `${r}位`} <span class="muted small">${f3(R.rank[k].score[i])}</span></td>`; }).join("")}<td class="n"><b class="num">${meanRank[i].toFixed(2)}</b></td></tr>`).join("")}</tbody></table></div>
+    <p class="small muted">各セルは「順位　スコア」。スコアの意味は手法ごとに異なります（VIKOR の Q は小さいほど良い）。</p>
+    <div class="row"><button class="btn small" id="csvR" type="button">評価結果をCSVで保存</button></div>
+  </section>
+  <section class="card">
+    <div class="tabs" role="tablist">${keys.map(k => `<button role="tab" type="button" aria-selected="${k === det}" data-rdet="${k}">${RANK_METHODS[k].label}</button>`).join("")}</div>
+    ${rankDetail(det)}
+  </section>`;
+};
+const RANK_NOTES = {
+  wsm: "各基準を0〜1に正規化（最良=1、最悪=0）し、重みを掛けて合計します。最も単純で説明しやすい方法です。",
+  topsis: "各基準をベクトル正規化して重みを掛け、正の理想解（各基準の最良値）に近く、負の理想解（最悪値）から遠い代替案を高く評価します。",
+  vikor: "理想からの隔たりについて、全体の合計 S（多数の満足）と最大の隔たり R（最も不満な基準）を v で組み合わせた Q で順位付けします。条件 C1（優位性）・C2（安定性）を満たすと妥協解として推奨できます。",
+  promethee: "代替案を2つずつ比べ、各基準でどちらが優れるかを重み付きで集計します。他を上回る強さ φ+ と下回る強さ φ− の差（正味フロー）で順位付けします。",
+};
+function rankDetail(k) {
+  const r = R.rank[k]; if (!r) return `<p class="err">${esc(R.err["rank_" + k] || "計算できません")}</p>`;
+  const meta = RANK_METHODS[k], m = R.m;
+  let cols = [], extra = "";
+  if (k === "wsm") cols = [["総合得点", r.score]];
+  if (k === "topsis") cols = [["正の理想解との距離 D+", r.dPlus], ["負の理想解との距離 D−", r.dMinus], ["近接度 C", r.score]];
+  if (k === "vikor") {
+    cols = [["S（合計の隔たり）", r.S], ["R（最大の隔たり）", r.R], ["Q", r.Q]];
+    extra = `<p class="small">許容差 DQ = 1/(m−1) = ${r.DQ.toFixed(3)}。C1（1位と2位の Q の差 ≥ DQ）：${r.C1 ? "満たす" : "満たさない"}、C2（1位が S または R でも1位）：${r.C2 ? "満たす" : "満たさない"}。
+      → 妥協解：<b>${r.compromise.map(i => esc(aname(i))).join("、")}</b></p>`;
+  }
+  if (k === "promethee") cols = [["φ+（上回る強さ）", r.phiPlus], ["φ−（下回る強さ）", r.phiMinus], ["正味フロー φ", r.score]];
+  const order = [...Array(m).keys()].sort((a, b) => r.rank[a] - r.rank[b]);
+  return `<p class="note">${RANK_NOTES[k]}</p>
+    <div class="grid2"><div><h3>${meta.scoreName}<span class="small muted" style="font-weight:400">（${meta.better}）</span></h3>
+      ${chart("chRank", el => rankBars(el, k, r))}</div>
+    <div class="tw"><table><tr><th class="n">順位</th><th>代替案</th>${cols.map(c => `<th class="n">${c[0]}</th>`).join("")}</tr>
+      ${order.map(i => `<tr><td class="n">${r.rank[i]}</td><td>${esc(aname(i))}</td>${cols.map(c => `<td class="n">${f4(c[1][i])}</td>`).join("")}</tr>`).join("")}</table>${extra}</div></div>`;
+}
+function rankBars(el, k, r) {
+  const m = R.m, order = [...Array(m).keys()].sort((a, b) => r.rank[a] - r.rank[b]);
+  const x = order.map(i => r.score[i]);
+  const min = Math.min(0, ...x), max = Math.max(0, ...x);
+  Plotly.react(el, [{ type: "bar", orientation: "h", y: order.map(aname), x, marker: { color: css("--series-1") },
+    text: x.map(f3), textposition: "outside", cliponaxis: false, textfont: { color: css("--ink"), family: css("--font-mono") }, hovertemplate: "%{y}: %{x:.4f}<extra></extra>" }],
+    layout({ height: Math.max(160, 36 * m + 50), bargap: 0.35, xaxis: axis({ range: [min < 0 ? min * 1.25 : 0, max * 1.2 || 0.1], tickformat: ".2f" }), yaxis: axis({ autorange: "reversed", ticksuffix: "  " }), margin: { l: 10, r: 40, t: 6, b: 30 } }), PCONF);
+}
+bind.ranking = el => {
+  el.addEventListener("input", e => {
+    if (e.target.id === "vikv") { state.rank.v = +e.target.value; $("#vikvl").textContent = (+e.target.value).toFixed(2); refresh(); }
+  });
+  el.addEventListener("change", e => { if (e.target.id === "ppref") { state.rank.pref = e.target.value; refresh(); } });
+  el.addEventListener("click", e => {
+    const b = e.target.closest("[data-rdet]"); if (b) { state.rank.detail = b.dataset.rdet; saveLocal(); refresh(); }
+    if (e.target.id === "csvR") exportRankCsv();
+  });
+};
+
+// =====================================================================
+// 画面 4: 感度分析
+// =====================================================================
+function viewSensitivity() {
+  return `
+  <div class="head"><h2>4. 感度分析</h2>
+    <p>1つの基準の重みを0から1まで動かし、他の基準の重みは元の比率を保って配分し直したとき、評価がどう変わるかを調べます。順位が入れ替わる重みが現在値の近くにあるほど、結論は重みの設定に左右されやすいと言えます。</p></div>
+  <section class="card">
+    <div class="row" style="gap:18px">
+      <div class="row"><label for="sm">手法</label><select id="sm">${Object.entries(RANK_METHODS).map(([k, v]) => `<option value="${k}" ${state.sens.method === k ? "selected" : ""}>${v.label}</option>`).join("")}</select></div>
+      <div class="row"><label for="sc">動かす基準</label><select id="sc">${state.criteria.map((c, j) => `<option value="${j}" ${state.sens.crit === j ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
+      <div class="chips" role="group" aria-label="表示"><button class="chip" type="button" data-smode="score" aria-pressed="${state.sens.mode === "score"}">スコア</button><button class="chip" type="button" data-smode="rank" aria-pressed="${state.sens.mode === "rank"}">順位</button></div>
+    </div>
+    <div data-live="sensRes">${LIVE.sensRes()}</div>
+  </section>
+  <section class="card"><header><h3>全基準の安定性</h3><p>各基準について、1位が入れ替わる重みの範囲（現在値に最も近い切替点）を示します。</p></header>
+    <div data-live="sensAll">${LIVE.sensAll()}</div></section>`;
+}
+function sensRun(method, j, steps = 100) {
+  return Engine.sensitivity(method, R.M, R.dirs, R.weights, j, { v: +state.rank.v, pref: state.rank.pref }, steps);
+}
+function topSegments(series) {
+  const segs = [];
+  series.forEach(p => {
+    const top = p.rank.indexOf(1);
+    if (!segs.length || segs[segs.length - 1].top !== top) segs.push({ top, from: p.t, to: p.t }); else segs[segs.length - 1].to = p.t;
+  });
+  return segs;
+}
+LIVE.sensRes = () => {
+  if (R.err.matrix || !R.weights) return `<p class="err">${esc(R.err.matrix || R.err.weights)}</p>`;
+  const j = state.sens.crit, k = state.sens.method, s = sensRun(k, j), cur = R.weights[j];
+  const segs = topSegments(s);
+  return `${chart("chSens", el => drawSens(el, s, cur, k))}
+    <div><h3 style="margin-bottom:4px">「${esc(cname(j))}」の重みと1位の代替案</h3>
+    <p class="small muted">現在の重み ${f3(cur)}（${RANK_METHODS[k].label}）</p>
+    <div class="tw"><table style="width:auto"><tr><th>重みの範囲</th><th>1位</th></tr>${segs.map(g => `<tr class="${cur >= g.from - 1e-9 && cur <= g.to + 0.01 ? "hl" : ""}"><td class="num">${g.from.toFixed(2)} 〜 ${g.to.toFixed(2)}</td><td>${esc(aname(g.top))}</td></tr>`).join("")}</table></div></div>`;
+};
+function drawSens(el, s, cur, k) {
+  const m = R.m, mode = state.sens.mode, xs = s.map(p => p.t);
+  const traces = [...Array(m).keys()].map(i => ({ type: "scatter", mode: "lines", name: aname(i), x: xs, y: s.map(p => mode === "rank" ? p.rank[i] : p.score[i]),
+    line: { width: 2, color: seriesColor(i), shape: mode === "rank" ? "hv" : "linear" }, hovertemplate: `${esc(aname(i))}: %{y:${mode === "rank" ? "d" : ".3f"}}<extra></extra>` }));
+  const ann = m <= 4 ? [...Array(m).keys()].map(i => ({ x: 1, y: mode === "rank" ? s[s.length - 1].rank[i] : s[s.length - 1].score[i], xanchor: "left", text: " " + esc(aname(i)), showarrow: false, font: { color: css("--ink-2"), size: 12 } })) : [];
+  ann.push({ x: cur, y: 1, yref: "paper", text: `現在 ${cur.toFixed(2)}`, showarrow: false, yanchor: "bottom", font: { color: css("--ink-2"), size: 11 } });
+  Plotly.react(el, traces, layout({ height: 340, showlegend: true, hovermode: "x unified", legend: { orientation: "h", y: -0.2, font: { color: css("--ink-2") } },
+    shapes: [{ type: "line", x0: cur, x1: cur, yref: "paper", y0: 0, y1: 1, line: { color: css("--ink-2"), dash: "dot", width: 1 } }], annotations: ann,
+    xaxis: axis({ title: { text: `「${cname(state.sens.crit)}」の重み` }, range: [0, 1], tickformat: ".1f" }),
+    yaxis: axis(mode === "rank" ? { title: { text: "順位" }, autorange: "reversed", dtick: 1 } : { title: { text: `${RANK_METHODS[k].scoreName}（${RANK_METHODS[k].better}）` } }),
+    margin: { l: 10, r: m <= 4 ? 70 : 16, t: 22, b: 20 } }), PCONF);
+}
+LIVE.sensAll = () => {
+  if (R.err.matrix || !R.weights) return "";
+  const k = state.sens.method;
+  const base = R.rank[k]?.rank.indexOf(1);
+  const rows = state.criteria.map((c, j) => {
+    const s = sensRun(k, j, 100), cur = R.weights[j];
+    const segs = topSegments(s);
+    const g = segs.find(g => cur >= g.from - 1e-9 && cur <= g.to + 0.01) || segs[0];
+    const lo = g.from, hi = g.to;
+    const margin = Math.min(lo > 0 ? cur - lo : Infinity, hi < 1 ? hi - cur : Infinity);
+    const st = !isFinite(margin) ? `<span class="pill good">変化なし</span>` : margin < 0.05 ? `<span class="pill bad">敏感</span>` : margin < 0.15 ? `<span class="pill warn">やや敏感</span>` : `<span class="pill good">安定</span>`;
+    return `<tr><td>${esc(c.name)}</td><td class="n">${f3(cur)}</td><td class="num">${lo.toFixed(2)} 〜 ${hi.toFixed(2)}</td><td>${segs.length > 1 ? segs.filter(x => x !== g).map(x => `${x.from.toFixed(2)}〜${x.to.toFixed(2)}：${esc(aname(x.top))}`).join("、") : "—"}</td><td>${st}</td></tr>`;
+  }).join("");
+  return `<p class="small">現在の1位：<b>${esc(aname(base))}</b>（${RANK_METHODS[k].label}）</p>
+    <div class="tw"><table><tr><th>基準</th><th class="n">現在の重み</th><th>1位が変わらない範囲</th><th>範囲外での1位</th><th>判定</th></tr>${rows}</table></div>
+    <p class="small muted">判定：現在の重みから ±0.05 未満で1位が入れ替わる場合「敏感」、±0.15 未満なら「やや敏感」。</p>`;
+};
+bind.sensitivity = el => {
+  el.addEventListener("change", e => {
+    if (e.target.id === "sm") { state.sens.method = e.target.value; refresh(); }
+    if (e.target.id === "sc") { state.sens.crit = +e.target.value; refresh(); }
+  });
+  $$("[data-smode]", el).forEach(b => b.onclick = () => { state.sens.mode = b.dataset.smode; $$("[data-smode]").forEach(x => x.setAttribute("aria-pressed", x === b)); refresh(); });
+};
+
+// =====================================================================
+// ガイド
+// =====================================================================
+const GQ = { goal: "", dep: "", src: "", rank: "" };
+function viewGuide() {
+  const q = (key, title, opts) => `<div class="q"><b>${title}</b><div class="chips">${opts.map(([v, l]) => `<button class="chip" type="button" data-g="${key}" data-v="${v}" aria-pressed="${GQ[key] === v}">${l}</button>`).join("")}</div></div>`;
+  return `
+  <div class="head"><h2>手法の選び方</h2><p>質問に答えると、使う手法の候補を示します。最終的には複数の手法で結果を比べ、結論が手法に左右されないかを確かめるのが確実です。</p></div>
+  <section class="card">
+    ${q("goal", "Q1. 何を決めたいですか", [["weight", "基準の重要度（重み）"], ["rank", "代替案の順位・選択"], ["cause", "基準どうしの因果関係"]])}
+    ${GQ.goal === "weight" || GQ.goal === "rank" ? q("dep", "Q2. 基準どうしが影響し合っていますか（例：価格が品質に影響する）", [["yes", "影響し合っている"], ["no", "ほぼ独立している"], ["unk", "分からない"]]) : ""}
+    ${(GQ.goal === "weight" || GQ.goal === "rank") && GQ.dep ? q("src", "Q3. 重みの根拠は何にしますか", [["expert", "関係者・専門家の判断"], ["data", "データのばらつき（客観）"], ["both", "両方を組み合わせる"]]) : ""}
+    ${GQ.goal === "rank" && GQ.src ? q("rank", "Q4. 代替案の選び方として近いものは", [["simple", "分かりやすく説明したい"], ["ideal", "理想に最も近いものを選びたい"], ["comp", "関係者の合意（妥協案）を重視"], ["outrank", "ある基準での大差を他で埋め合わせたくない"]]) : ""}
+    <div id="reco">${guideReco()}</div>
+  </section>
+  <section class="card"><header><h3>手法一覧</h3></header>
+    <div class="mcards">${METHOD_CARDS.map(c => `<div class="mcard"><h3>${c.name}</h3><p class="small muted">${c.kind}</p>
+      <dl><dt>向く場面</dt><dd>${c.when}</dd><dt>必要な入力</dt><dd>${c.input}</dd><dt>注意点</dt><dd>${c.caution}</dd></dl>
+      <div><a class="btn small" href="${c.href}" data-open="${c.tab || ""}">開く</a></div></div>`).join("")}</div></section>`;
+}
+const METHOD_CARDS = [
+  { name: "DEMATEL / DANP", kind: "重み付け・因果分析", when: "基準が互いに影響し合う。原因となる基準を特定したい", input: "基準間の影響度（0〜4）", caution: "基準が多いと回答負担が大きい（n×(n−1) 個）", href: "#weights", tab: "danp" },
+  { name: "AHP", kind: "重み付け", when: "基準がほぼ独立。関係者の判断で重要度を決めたい", input: "基準の一対比較（1〜9）", caution: "基準が9を超えると整合しにくい。CR < 0.1 を確認", href: "#weights", tab: "ahp" },
+  { name: "エントロピー法", kind: "重み付け（客観）", when: "人の判断を入れずにデータから重みを出したい", input: "決定行列", caution: "差が大きい基準を重視するだけで、重要度そのものではない", href: "#weights", tab: "entropy" },
+  { name: "CRITIC", kind: "重み付け（客観）", when: "似た基準が複数あり、情報の重複を抑えたい", input: "決定行列（代替案3つ以上を推奨）", caution: "代替案が少ないと相関が不安定", href: "#weights", tab: "critic" },
+  { name: "加重和（WSM）", kind: "代替案評価", when: "結果を分かりやすく説明したい", input: "決定行列・重み", caution: "ある基準の弱さを他で完全に埋め合わせられる", href: "#ranking", rdet: "wsm" },
+  { name: "TOPSIS", kind: "代替案評価", when: "理想に近く、最悪から遠いものを選びたい", input: "決定行列・重み", caution: "代替案を増減すると順位が変わることがある", href: "#ranking", rdet: "topsis" },
+  { name: "VIKOR", kind: "代替案評価", when: "全体の満足と最大の不満のバランスを取りたい。DANPとの組合せが定番", input: "決定行列・重み・v", caution: "妥協解が複数になる場合がある", href: "#ranking", rdet: "vikor" },
+  { name: "PROMETHEE II", kind: "代替案評価", when: "ある基準での大差を他の基準で埋め合わせたくない", input: "決定行列・重み・選好関数", caution: "選好関数の選び方で結果が変わる", href: "#ranking", rdet: "promethee" },
+];
+function guideReco() {
+  const g = GQ;
+  if (g.goal === "cause") return reco("DEMATEL", "基準どうしの因果関係は DEMATEL の影響関係マップで分かります。D−R が正の基準が「原因」で、そこに手を打つと他の基準にも波及します。", [["DEMATEL を開く", "danp"]]);
+  if (!g.goal || !g.dep || !g.src) return `<p class="small muted">質問に答えると、ここに推奨が表示されます。</p>`;
+  let w, wtab, why;
+  if (g.src === "data") { w = "エントロピー法 または CRITIC"; wtab = g.dep === "yes" ? "critic" : "entropy"; why = g.dep === "yes" ? "基準どうしが関係しているので、相関を考慮する CRITIC が適しています。" : "データのばらつきから重みを出すエントロピー法が簡便です。"; }
+  else if (g.dep === "no") { w = "AHP"; wtab = "ahp"; why = "基準が独立していれば、一対比較で重要度を答える AHP が標準的です。"; }
+  else { w = "DANP"; wtab = "danp"; why = g.dep === "yes" ? "基準が影響し合っているため、依存関係を重みに反映できる DANP が適しています。" : "影響関係が不明なら、まず DEMATEL で確認しましょう。強い影響がなければ AHP でも構いません。"; }
+  if (g.src === "both") why += " 主観の重みとエントロピー法・CRITIC を「組合せ」で掛け合わせると、判断とデータの両方を反映できます。";
+  if (g.goal === "weight") return reco(w, why, [[`${w.split(" ")[0]} を開く`, wtab]]);
+  if (!g.rank) return reco(w, why + " 続けて Q4 に答えると評価手法も提案します。", [[`${w.split(" ")[0]} を開く`, wtab]]);
+  const rk = { simple: ["wsm", "加重和（WSM）"], ideal: ["topsis", "TOPSIS"], comp: ["vikor", "VIKOR"], outrank: ["promethee", "PROMETHEE II"] }[g.rank];
+  return reco(`重み：${w}　→　評価：${rk[1]}`, why + ` 評価には ${rk[1]} を中心に使い、総合結果の表で他の手法と順位が一致するかも確認してください。`, [[`重み付けを開く`, wtab], [`${rk[1]} を開く`, "rank:" + rk[0]]]);
+}
+function reco(title, text, btns) { return `<div class="reco"><h3>推奨：${esc(title)}</h3><p>${esc(text)}</p><div class="row">${btns.map(([l, t]) => `<button class="btn primary small" type="button" data-goto="${t}">${esc(l)}</button>`).join("")}</div></div>`; }
+bind.guide = el => {
+  el.addEventListener("click", e => {
+    const b = e.target.closest("[data-g]");
+    if (b) {
+      GQ[b.dataset.g] = b.dataset.v;
+      const order = ["goal", "dep", "src", "rank"]; order.slice(order.indexOf(b.dataset.g) + 1).forEach(k => GQ[k] = "");
+      render(); return;
+    }
+    const gt = e.target.closest("[data-goto]");
+    if (gt) { const t = gt.dataset.goto; if (t.startsWith("rank:")) { state.rank.detail = t.slice(5); location.hash = "ranking"; } else { state.ui.wtab = t; location.hash = "weights"; } saveLocal(); return; }
+    const op = e.target.closest("[data-open]");
+    if (op) { const c = METHOD_CARDS.find(c => c.name === op.closest(".mcard").querySelector("h3").textContent); if (c?.tab) state.ui.wtab = c.tab; if (c?.rdet) state.rank.detail = c.rdet; saveLocal(); }
+  });
+};
+
+// =====================================================================
+// 保存・読込・CSV
+// =====================================================================
+// 自前ホスティング版：ブラウザの通常のダウンロードで保存する
+async function offerFile(filename, data, label) {
+  try {
+    const blob = new Blob([data], { type: filename.endsWith(".csv") ? "text/csv;charset=utf-8" : "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`${label}をダウンロードしました`);
+  } catch (e) {
+    $("#modalTitle").textContent = `${label}をコピー`;
+    $("#modalText").value = data;
+    $("#modal").classList.add("on"); $("#modalText").select();
+  }
+}
+$("#modalClose").onclick = () => $("#modal").classList.remove("on");
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") $("#modal").classList.remove("on"); });
+$("#modalCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#modalText").value); toast("コピーしました"); } catch (e) { $("#modalText").select(); toast("選択した状態です。Ctrl+C（⌘C）でコピーしてください"); } };
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#modal").classList.remove("on"); });
+const safeName = () => (state.name || "案件").replace(/[\\/:*?"<>|]/g, "_").slice(0, 60);
+const csvCell = v => { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+const toCsv = rows => "﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n");
+function exportWeightsCsv() {
+  const keys = ["danp", "ahp", "entropy", "critic", "manual", "equal", "combo"].filter(k => R.w[k]);
+  const rows = [["基準", ...keys.map(k => WEIGHT_METHODS[k].label + (k === state.weightSource ? "（採用）" : ""))]];
+  state.criteria.forEach((c, j) => rows.push([c.name, ...keys.map(k => R.w[k][j].toFixed(6))]));
+  if (R.ahp) rows.push(["AHP 整合比 CR", ...keys.map(k => k === "ahp" ? R.ahp.CR.toFixed(4) : "")]);
+  offerFile(`${safeName()}_重み.csv`, toCsv(rows), "重みの比較表");
+}
+function exportRankCsv() {
+  const keys = Object.keys(RANK_METHODS).filter(k => R.rank[k]);
+  const rows = [["代替案", ...keys.flatMap(k => [`${RANK_METHODS[k].short} 順位`, `${RANK_METHODS[k].short} ${RANK_METHODS[k].scoreName}`])]];
+  state.alternatives.forEach((a, i) => rows.push([a, ...keys.flatMap(k => [R.rank[k].rank[i], R.rank[k].score[i].toFixed(6)])]));
+  rows.push([]); rows.push(["使用した重み", WEIGHT_METHODS[state.weightSource].label]);
+  state.criteria.forEach((c, j) => rows.push([c.name, R.weights[j].toFixed(6)]));
+  offerFile(`${safeName()}_評価結果.csv`, toCsv(rows), "評価結果");
+}
+$("#btnSave").onclick = () => offerFile(`${safeName()}.json`, JSON.stringify(state, null, 1), "案件ファイル");
+$("#btnOpen").onclick = () => $("#fileOpen").click();
+$("#fileOpen").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const o = JSON.parse(await f.text()); if (!validState(o)) throw new Error(); state = o; saveLocal(); render(); toast(`「${state.name}」を開きました`); }
+  catch (err) { toast("このファイルは案件ファイルとして読み込めません"); }
+  e.target.value = "";
+});
+$("#btnNew").onclick = () => confirmThen("新しい案件を作成します。現在の入力は消えます（必要なら先に「案件を保存」してください）。", () => { state = blankState(); saveLocal(); location.hash = "setup"; render(); });
+$("#btnSample").onclick = () => confirmThen("サンプル案件を読み込みます。現在の入力は消えます。", () => { state = sampleState(); saveLocal(); render(); });
+$("#projName").addEventListener("change", e => { state.name = e.target.value.trim() || "無題の案件"; saveLocal(); });
+function confirmThen(msg, fn) {
+  const m = $("#modal"), box = $(".box", m), prev = box.innerHTML;
+  box.innerHTML = `<h3 id="modalTitle">確認</h3><p>${esc(msg)}</p><div class="row"><button class="btn primary" id="cfYes" type="button">続ける</button><button class="btn" id="cfNo" type="button">やめる</button></div>`;
+  m.classList.add("on");
+  const close = () => { m.classList.remove("on"); box.innerHTML = prev; rebindModal(); };
+  $("#cfYes").onclick = () => { close(); fn(); };
+  $("#cfNo").onclick = close; $("#cfYes").focus();
+}
+function rebindModal() {
+  $("#modalClose").onclick = () => $("#modal").classList.remove("on");
+  $("#modalCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#modalText").value); toast("コピーしました"); } catch (e) { $("#modalText").select(); toast("選択した状態です。Ctrl+C（⌘C）でコピーしてください"); } };
+}
+
+// テーマ切替時にグラフの色を更新
+const reTheme = () => { if (document.getElementById("main").children.length) render(); };
+try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", reTheme); } catch (e) {}
+new MutationObserver(reTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+go(location.hash.slice(1) || "setup");
+</script>
+</body>
+</html>
